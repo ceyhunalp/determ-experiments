@@ -11,8 +11,8 @@
 #include <time.h>
 #include <assert.h>
 
-#define WARMUP_COUNT 1
-#define EXEC_COUNT 2
+#define WARMUP_COUNT 10000
+#define EXEC_COUNT 1000
 
 void printMatrix(double* m, int r, int c) {
     for (int i = 0; i < r; i++) {
@@ -25,12 +25,12 @@ void printMatrix(double* m, int r, int c) {
 }
 
 void matrixMultiply(int r1, int c1, int r2, int c2, bool warmup) {
-    double tmp;
     double* m1 = (double*) malloc(r1*c1*sizeof(double));
     double* m2 = (double*) malloc(r2*c2*sizeof(double));
     double* result = (double*) malloc(r1*c2*sizeof(double));
+    unsigned char* buf_result = (unsigned char*) malloc(r1*c2*sizeof(double));
 
-    unsigned long exec_time;
+    unsigned long exec_times[EXEC_COUNT];
     struct timespec start, end;
 
     srand(time(NULL));
@@ -41,16 +41,14 @@ void matrixMultiply(int r1, int c1, int r2, int c2, bool warmup) {
         m2[i] = (double)rand() / RAND_MAX;
     }
 
-//    printMatrix(m1, r1, c1);
-//    printMatrix(m2, r2, c2);
-
-//    char data[sizeof(double)];
-//    for (int i = 0; i < r1 * c1; i++) {
-//        double tmp;
-//        memcpy(data, &m1[i], sizeof(double));
-//        memcpy(&tmp, data, sizeof(double));
+//    char data[sizeof(double)*r1*c2];
+//    double* newres = (double*) malloc(r1*c2*sizeof(double));
+//    for (int i = 0; i < r1 * c2; i++) {
+//        memcpy(data+i*sizeof(double), &result[i], sizeof(double));
+//        memcpy(newres+i, data+i*sizeof(double), sizeof(double));
 //    }
 
+    double tmp;
     if (warmup) {
         for (int cnt = 0; cnt < WARMUP_COUNT; cnt++) {
             for (int i = 0; i < r1; i++) {
@@ -66,7 +64,7 @@ void matrixMultiply(int r1, int c1, int r2, int c2, bool warmup) {
     }
 
     for (int cnt = 0; cnt < EXEC_COUNT; cnt++) {
-        clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+        clock_gettime(CLOCK_MONOTONIC, &start);
         for (int i = 0; i < r1; i++) {
             for (int j = 0; j < c2; j++) {
                 tmp = 0;
@@ -76,36 +74,43 @@ void matrixMultiply(int r1, int c1, int r2, int c2, bool warmup) {
                 result[i*c2 + j] = tmp;
             }
         }
-        clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-        exec_time = (end.tv_sec - start.tv_sec) * 1e9;
-        exec_time += (end.tv_nsec - start.tv_nsec);
-        printf("%lu\n", exec_time);
+        for (int i = 0; i < r1 * c2; i++) {
+            memcpy(&buf_result[i], (unsigned char*)&result[i], sizeof(double));
+        }
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        exec_times[cnt] = (end.tv_sec - start.tv_sec) * 1000000000;
+        exec_times[cnt] += (end.tv_nsec - start.tv_nsec);
     }
     free(m1);
     free(m2);
     free(result);
+    for (int i = 0; i < EXEC_COUNT; i++) {
+        printf("%lu\n", exec_times[i]);
+    }
 }
 
 int main(int argc, char* argv[]) {
-    int r1 = 4;
-    int c1 = 5;
-    int r2 = 5;
-    int c2 = 7;
-    matrixMultiply(r1, c1, r2, c2, false);
+    /*int r1 = 1000;*/
+    /*int c1 = 1000;*/
+    /*int r2 = 1000;*/
+    /*int c2 = 1000;*/
+    /*matrixMultiply(r1, c1, r2, c2, false);*/
 
-//    if (argc != 6) {
-//        fprintf(stderr, "Missing argument\n");
-//        exit(EXIT_FAILURE);
-//    }
-//
-//    bool warmup = true;
-//    if (strcmp(argv[5], "-w") != 0) {
-//        warmup = false;
-//    }
-//    int r1 = atoi(argv[1]);
-//    int c1 = atoi(argv[2]);
-//    int r2 = atoi(argv[3]);
-//    int c2 = atoi(argv[4]);
-//    assert(c1 == r2);
-//    matrixMultiply(r1, c1, r2, c2, warmup);
+    if (argc != 6) {
+        fprintf(stderr, "Missing argument\n");
+        exit(EXIT_FAILURE);
+    }
+
+    bool warmup;
+    if (strcmp(argv[5], "y") == 0) {
+        warmup = true;
+    } else {
+        warmup = false;
+    }
+    int r1 = atoi(argv[1]);
+    int c1 = atoi(argv[2]);
+    int r2 = atoi(argv[3]);
+    int c2 = atoi(argv[4]);
+    assert(c1 == r2);
+    matrixMultiply(r1, c1, r2, c2, warmup);
 }
