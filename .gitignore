@@ -2,3 +2,5 @@
 wasm/*.wasm
 
 *.class
+*/target/*
+results/*
