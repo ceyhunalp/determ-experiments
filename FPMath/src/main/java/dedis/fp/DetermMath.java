@@ -746,8 +746,8 @@ public class DetermMath {
 //        }
 
 
-        DetermNan.testNaN();
-//        DetermNan ft = new DetermNan();
+        DetermNan ft = new DetermNan();
+        ft.testStrict();
 //        ft.compareStrictAndMPFR();
 
 //        long[] arr = new long[]{4,6,7};
