@@ -1,12 +1,11 @@
-import dedis.fp.FPBenchmark;
-import org.apache.commons.cli.*;
+package dedis.fp;
 
+import org.apache.commons.cli.*;
 import java.io.IOException;
 
-public class FPBenchmarkTest {
+public class Launcher {
 
-    public static void main(String[] args) throws ParseException {
-
+    public static void launchBenchmark(String[] args) throws ParseException {
         String libName = null;
         String[] funcNames = null;
         CommandLine cmd;
@@ -55,12 +54,16 @@ public class FPBenchmarkTest {
             System.exit(1);
         }
 
-        FPBenchmark experiment = new FPBenchmark(libName, funcNames, dirpath, seed, ic, wc, ec);
+        FPBenchmark fpBenchmark = new FPBenchmark(libName, funcNames, dirpath, seed, ic, wc, ec);
         try {
-            experiment.runBenchmarks();
+            fpBenchmark.runBenchmarks();
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+
+    public static void main(String[] args) throws ParseException {
+        launchBenchmark(args);
     }
 }

@@ -41,13 +41,6 @@ void matrixMultiply(int r1, int c1, int r2, int c2, bool warmup) {
         m2[i] = (double)rand() / RAND_MAX;
     }
 
-//    char data[sizeof(double)*r1*c2];
-//    double* newres = (double*) malloc(r1*c2*sizeof(double));
-//    for (int i = 0; i < r1 * c2; i++) {
-//        memcpy(data+i*sizeof(double), &result[i], sizeof(double));
-//        memcpy(newres+i, data+i*sizeof(double), sizeof(double));
-//    }
-
     double tmp;
     if (warmup) {
         for (int cnt = 0; cnt < WARMUP_COUNT; cnt++) {
@@ -64,19 +57,27 @@ void matrixMultiply(int r1, int c1, int r2, int c2, bool warmup) {
     }
 
     for (int cnt = 0; cnt < EXEC_COUNT; cnt++) {
+        /*double doo = 13.131313;*/
         clock_gettime(CLOCK_MONOTONIC, &start);
         for (int i = 0; i < r1; i++) {
             for (int j = 0; j < c2; j++) {
                 tmp = 0;
                 for (int k = 0; k < c1; k++) {
+                    /*double foo = 5.66666;*/
                     tmp += m1[i*c1 + k] * m2[j + k*c2];
+                    /*double foobar = 7.7767676;*/
                 }
+                /*double poo = 101.10101;*/
                 result[i*c2 + j] = tmp;
+                /*double poobar = 121.12121;*/
             }
         }
         for (int i = 0; i < r1 * c2; i++) {
+            /*double goo = 30.30330;*/
             memcpy(&buf_result[i], (unsigned char*)&result[i], sizeof(double));
+            /*double goobar = 40.404040;*/
         }
+        /*double doobar = 23.232323;*/
         clock_gettime(CLOCK_MONOTONIC, &end);
         exec_times[cnt] = (end.tv_sec - start.tv_sec) * 1000000000;
         exec_times[cnt] += (end.tv_nsec - start.tv_nsec);
@@ -90,12 +91,6 @@ void matrixMultiply(int r1, int c1, int r2, int c2, bool warmup) {
 }
 
 int main(int argc, char* argv[]) {
-    /*int r1 = 1000;*/
-    /*int c1 = 1000;*/
-    /*int r2 = 1000;*/
-    /*int c2 = 1000;*/
-    /*matrixMultiply(r1, c1, r2, c2, false);*/
-
     if (argc != 6) {
         fprintf(stderr, "Missing argument\n");
         exit(EXIT_FAILURE);
