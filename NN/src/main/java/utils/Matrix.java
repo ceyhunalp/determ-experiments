@@ -25,6 +25,17 @@ public class Matrix {
         }
     }
 
+    public Matrix(double[][] data) {
+        numRows = data.length;
+        numColumns = data[0].length;
+        this.data = new double[numRows][numColumns];
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numColumns; j++) {
+                this.data[i][j] = data[i][j];
+            }
+        }
+    }
+
     public void sum(Matrix y) {
         Matrix x = this;
         assert (x.numRows == y.numRows && x.numColumns == y.numColumns);
@@ -91,6 +102,14 @@ public class Matrix {
             }
         }
         return transpose;
+    }
+
+    public Matrix getRow(int r) {
+        assert (r < this.numRows);
+        Matrix result = new Matrix(1, this.numColumns);
+        if (result.numColumns >= 0)
+            System.arraycopy(this.data[r], 0, result.data[0], 0, result.numColumns);
+        return result;
     }
 
 //    public int getRowDimension() {
