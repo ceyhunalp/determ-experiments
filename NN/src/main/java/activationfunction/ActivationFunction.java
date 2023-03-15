@@ -1,10 +1,8 @@
 package activationfunction;
 
-import utils.Matrix;
-
 public interface ActivationFunction {
 
-    void applyFunction(Matrix m);
+    void applyFunction(double[][] m);
 
-    Matrix applyDerivative(Matrix m);
+    double[][] applyDerivative(double[][] m);
 }

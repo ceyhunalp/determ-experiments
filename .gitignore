@@ -4,3 +4,4 @@ wasm/*.wasm
 *.class
 */target/*
 results/*
+mnist/

@@ -2,6 +2,7 @@ package nn;
 
 import activationfunction.ActivationFunction;
 import activationfunction.ActivationHelper;
+import utils.Dataset;
 import utils.Matrix;
 
 import java.util.Random;
@@ -19,16 +20,18 @@ public class NN {
 
     private final long seed;
 
+    private final Dataset dataset;
     private final String funcName;
-    private final Matrix[] weights;
-    private final Matrix[] biases;
-    private final Matrix[] outputs;
-    private final Matrix[] gradients;
+    private final double[][][] weights;
+    private final double[][][] biases;
+    private final double[][][] outputs;
+    private final double[][][] gradients;
+    private final int[] predictions;
     private ActivationFunction activFunc;
 
     public NN(int epochs, double lrate, double errorThresh, int inputNodes,
               int hiddenNodes, int outputNodes, int hiddenLayers, long seed,
-              String funcName) {
+              String funcName, Dataset d) {
         this.epochs = epochs;
         this.lrate = lrate;
         this.errorThresh = errorThresh;
@@ -38,10 +41,12 @@ public class NN {
         this.hiddenLayers = hiddenLayers;
         this.seed = seed;
         this.funcName = funcName;
-        weights = new Matrix[hiddenLayers + 1];
-        biases = new Matrix[hiddenLayers + 1];
-        outputs = new Matrix[hiddenLayers + 1];
-        gradients = new Matrix[hiddenLayers + 1];
+        this.dataset = d;
+        weights = new double[hiddenLayers + 1][][];
+        biases = new double[hiddenLayers + 1][][];
+        outputs = new double[hiddenLayers + 1][][];
+        gradients = new double[hiddenLayers + 1][][];
+        predictions = new int[d.testData.length];
     }
 
     public void initializeNN() {
@@ -54,19 +59,19 @@ public class NN {
                 denom = StrictMath.sqrt(inputNodes + hiddenNodes);
                 upper = nom / denom;
                 lower = upper * -1.0;
-                weights[i] = new Matrix(inputNodes, hiddenNodes, lower,
+                weights[i] = Matrix.createMatrix(inputNodes, hiddenNodes, lower,
                         upper, rand);
             } else if (i == hiddenLayers) {
                 denom = StrictMath.sqrt(hiddenNodes + outputNodes);
                 upper = nom / denom;
                 lower = upper * -1.0;
-                weights[i] = new Matrix(hiddenNodes, outputNodes, lower,
+                weights[i] = Matrix.createMatrix(hiddenNodes, outputNodes, lower,
                         upper, rand);
             } else {
                 denom = StrictMath.sqrt(2 * hiddenNodes);
                 upper = nom / denom;
                 lower = upper * -1.0;
-                weights[i] = new Matrix(hiddenNodes, hiddenNodes, lower,
+                weights[i] = Matrix.createMatrix(hiddenNodes, hiddenNodes, lower,
                         upper, rand);
             }
         }
@@ -74,10 +79,10 @@ public class NN {
         for (int i = 0; i < hiddenLayers + 1; i++) {
             if (i == hiddenLayers) {
                 // Biases for the output layer
-                biases[i] = new Matrix(1, outputNodes, 0, 1, rand);
+                biases[i] = Matrix.createMatrix(1, outputNodes, 0, 1, rand);
             } else {
                 // Biases for hidden layers
-                biases[i] = new Matrix(1, hiddenNodes, 0, 1, rand);
+                biases[i] = Matrix.createMatrix(1, hiddenNodes, 0, 1, rand);
             }
         }
         // Initialize activation function
@@ -85,94 +90,100 @@ public class NN {
     }
 
     public void runNN() {
-        double[][] inputData = {
-                {0, 0},
-                {0, 1},
-                {1, 0},
-                {1, 1}
-        };
-        double[][] targetData = {
-                {0},
-                {1},
-                {1},
-                {0}
-        };
-        double[][] testData = {
-                {0, 0},
-                {0, 1},
-                {1, 0},
-                {1, 1}
-        };
-        Matrix input = new Matrix(inputData);
-        Matrix target = new Matrix(targetData);
-        Matrix test = new Matrix(testData);
-
         int iter = 0;
         double globalError;
         do {
+            System.out.println("Iteration: " + iter);
             globalError = 0.0;
-            for (int j = 0; j < input.numRows; j++) {
-                Matrix inVector = input.getRow(j);
-                Matrix tVector = target.getRow(j);
-                feedforward(inVector);
-                backpropagation(inVector, tVector);
-                globalError += 0.5 * (Math.pow(tVector.data[0][0] - outputs[hiddenLayers].data[0][0], 2));
+            for (int i = 0; i < dataset.trainData.length; i++) {
+                feedforward(dataset.trainData[i]);
+                backpropagation(dataset.trainData[i], dataset.targets[i]);
+                globalError += 0.5 * (Math.pow(dataset.targets[i][0][0] - outputs[hiddenLayers][0][0], 2));
             }
             iter++;
         } while (iter < epochs && globalError > errorThresh);
 
         System.out.println("Training finished @ " + iter);
 
-        for (int i = 0; i < test.numRows; i++) {
-            Matrix v = test.getRow(i);
-            feedforward(v);
-            Matrix o = outputs[hiddenLayers];
-            for (int j = 0; j < o.numColumns; j++) {
-                System.out.println("output: " + o.data[0][j]);
+        for (int i = 0; i < dataset.testData.length; i++) {
+            feedforward(dataset.testData[i]);
+            double[][] o = outputs[hiddenLayers];
+            int predIdx = getPredictionIndex(o[0]);
+            int labelIdx = getLabelIndex(dataset.testLabels[i][0]);
+            if (predIdx == labelIdx) {
+                predictions[i] = 1;
+            } else {
+                predictions[i] = 0;
             }
         }
     }
 
-    public void feedforward(Matrix input) {
+    public void feedforward(double[][] input) {
         for (int i = 0; i < hiddenLayers + 1; i++) {
             if (i == 0) {
-                outputs[i] = input.multiply(weights[i]);
+                outputs[i] = Matrix.multiply(input, weights[i]);
             } else {
-                outputs[i] = outputs[i - 1].multiply(weights[i]);
+                outputs[i] = Matrix.multiply(outputs[i - 1], weights[i]);
             }
-            outputs[i].sum(biases[i]);
+            Matrix.sum(outputs[i], biases[i]);
             activFunc.applyFunction(outputs[i]);
         }
     }
 
-    public void backpropagation(Matrix input, Matrix target) {
+    public void backpropagation(double[][] input, double[][] target) {
         // Calculate error gradients
         for (int i = hiddenLayers; i >= 0; i--) {
             if (i == hiddenLayers) {
-                Matrix error = target.subtract(outputs[i]);
+                double[][] error = Matrix.subtract(target, outputs[i]);
                 gradients[i] = activFunc.applyDerivative(outputs[i]);
-                gradients[i].elementMultiply(error);
+                Matrix.elementMultiply(gradients[i], error);
             } else {
-                Matrix weightedErrors = gradients[i + 1].multiply(weights[i + 1].transpose());
+                double[][] weightedErrors = Matrix.multiply(gradients[i + 1],
+                        Matrix.transpose(weights[i + 1]));
                 gradients[i] = activFunc.applyDerivative(outputs[i]);
-                gradients[i].elementMultiply(weightedErrors);
+                Matrix.elementMultiply(gradients[i], weightedErrors);
             }
         }
         // Calculate weight corrections & update weights
-        Matrix delta;
+        double[][] delta;
         for (int i = 0; i < hiddenLayers + 1; i++) {
             if (i == 0) {
-                delta = input.transpose().multiply(gradients[i]);
+                delta = Matrix.multiply(Matrix.transpose(input), gradients[i]);
             } else {
-                delta = outputs[i - 1].transpose().multiply(gradients[i]);
+                delta = Matrix.multiply(Matrix.transpose(outputs[i - 1]), gradients[i]);
             }
-            delta.scale(lrate);
-            weights[i].sum(delta);
+            Matrix.scale(delta, lrate);
+            Matrix.sum(weights[i], delta);
         }
         // Calculate bias corrections & update biases
         for (int i = 0; i < hiddenLayers + 1; i++) {
-            gradients[i].scale(lrate);
-            biases[i].sum(gradients[i]);
+            Matrix.scale(gradients[i], lrate);
+            Matrix.sum(biases[i], gradients[i]);
         }
+    }
+
+    private int getLabelIndex(int[] labels) {
+        for (int i = 0; i < labels.length; i++) {
+            if (labels[i] == 1) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int getPredictionIndex(double[] prediction) {
+        int maxIdx = 0;
+        double maxVal = prediction[0];
+        for (int i = 1; i < prediction.length; i++) {
+            if (prediction[i] > maxVal) {
+                maxVal = prediction[i];
+                maxIdx = i;
+            }
+        }
+        return maxIdx;
+    }
+
+    public int[] getPredictions() {
+        return this.predictions;
     }
 }
