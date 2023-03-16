@@ -56,9 +56,11 @@ public class Launcher<target> {
     public static Dataset readMNISTDataset(String trainBase, String testBase) throws IOException {
         List<Path> trainFiles = Files.walk(Paths.get(trainBase), 2)
                 .filter(Files::isRegularFile)
+                .filter(path -> !path.toString().contains("DS_Store"))
                 .toList();
         List<Path> testFiles = Files.walk(Paths.get(testBase), 2)
                 .filter(Files::isRegularFile)
+                .filter(path -> !path.toString().contains("DS_Store"))
                 .toList();
 
         int trainSize = trainFiles.size();

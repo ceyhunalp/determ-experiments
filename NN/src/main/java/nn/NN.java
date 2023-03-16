@@ -56,19 +56,19 @@ public class NN {
         // Initialize weights
         for (int i = 0; i < hiddenLayers + 1; i++) {
             if (i == 0) {
-                denom = StrictMath.sqrt(inputNodes + hiddenNodes);
+                denom = Math.sqrt(inputNodes + hiddenNodes);
                 upper = nom / denom;
                 lower = upper * -1.0;
                 weights[i] = Matrix.createMatrix(inputNodes, hiddenNodes, lower,
                         upper, rand);
             } else if (i == hiddenLayers) {
-                denom = StrictMath.sqrt(hiddenNodes + outputNodes);
+                denom = Math.sqrt(hiddenNodes + outputNodes);
                 upper = nom / denom;
                 lower = upper * -1.0;
                 weights[i] = Matrix.createMatrix(hiddenNodes, outputNodes, lower,
                         upper, rand);
             } else {
-                denom = StrictMath.sqrt(2 * hiddenNodes);
+                denom = Math.sqrt(2 * hiddenNodes);
                 upper = nom / denom;
                 lower = upper * -1.0;
                 weights[i] = Matrix.createMatrix(hiddenNodes, hiddenNodes, lower,
