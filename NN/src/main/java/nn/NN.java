@@ -51,7 +51,7 @@ public class NN {
 
     public void initializeNN() {
         double lower, upper, denom;
-        double nom = StrictMath.sqrt(6.0);
+        double nom = Math.sqrt(6.0);
         Random rand = new Random(seed);
         // Initialize weights
         for (int i = 0; i < hiddenLayers + 1; i++) {
@@ -98,7 +98,8 @@ public class NN {
             for (int i = 0; i < dataset.trainData.length; i++) {
                 feedforward(dataset.trainData[i]);
                 backpropagation(dataset.trainData[i], dataset.targets[i]);
-                globalError += 0.5 * (Math.pow(dataset.targets[i][0][0] - outputs[hiddenLayers][0][0], 2));
+//                globalError += 0.5 * (Math.pow(dataset.targets[i][0][0] - outputs[hiddenLayers][0][0], 2));
+                globalError += calculateMSE(i);
             }
             iter++;
         } while (iter < epochs && globalError > errorThresh);
@@ -160,6 +161,19 @@ public class NN {
             Matrix.scale(gradients[i], lrate);
             Matrix.sum(biases[i], gradients[i]);
         }
+    }
+
+    private double calculateMSE(int targetIdx) {
+        double[] predicted = outputs[hiddenLayers][0];
+        double[] actual = dataset.targets[targetIdx][0];
+        assert (outputs[hiddenLayers].length == 1);
+        assert (predicted.length == actual.length);
+        double error = 0.0;
+        for (int i = 0; i < predicted.length; i++) {
+            error += Math.pow(actual[i] - predicted[i], 2);
+        }
+        error = error / (double) predicted.length;
+        return error;
     }
 
     private int getLabelIndex(int[] labels) {
