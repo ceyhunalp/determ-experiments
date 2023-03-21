@@ -89,4 +89,11 @@ public class Matrix {
         return transpose;
     }
 
+    public static void reset(double[][] matrix) {
+        int r = matrix.length;
+        int c = matrix[0].length;
+        for (int i = 0; i < r; i++) {
+            for (int j = 0; j < c; j++) matrix[i][j] = 0.0;
+        }
+    }
 }

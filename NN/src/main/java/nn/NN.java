@@ -2,114 +2,103 @@ package nn;
 
 import activationfunction.ActivationFunction;
 import activationfunction.ActivationHelper;
+import activationfunction.SoftMax;
 import utils.Dataset;
 import utils.Matrix;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class NN {
+    private final long seed;
+    private final Dataset dataset;
+    private final int batchSize;
 
     private final int epochs;
-    private final double lrate;
     private final double errorThresh;
-
-    private final int inputNodes;
-    private final int hiddenNodes;
-    private final int outputNodes;
+    private final int[] nodeCounts;
     private final int hiddenLayers;
-
-    private final long seed;
-
-    private final Dataset dataset;
     private final String funcName;
+    private final boolean useSoftmax;
+    private final boolean useMB;
     private final double[][][] weights;
     private final double[][][] biases;
     private final double[][][] outputs;
+    private final double[][][] derivatives;
     private final double[][][] gradients;
     private final int[] predictions;
+    private double lrate;
     private ActivationFunction activFunc;
 
-    public NN(int epochs, double lrate, double errorThresh, int inputNodes,
-              int hiddenNodes, int outputNodes, int hiddenLayers, long seed,
-              String funcName, Dataset d) {
+    public NN(int epochs, double lrate, double errorThresh, int[] nodeCounts,
+              int hiddenLayers, long seed, boolean useSoftmax, boolean useMB,
+              int batchSize, String funcName, Dataset d) {
+        this.seed = seed;
+        this.dataset = d;
         this.epochs = epochs;
         this.lrate = lrate;
         this.errorThresh = errorThresh;
-        this.inputNodes = inputNodes;
-        this.hiddenNodes = hiddenNodes;
-        this.outputNodes = outputNodes;
+        this.nodeCounts = nodeCounts;
         this.hiddenLayers = hiddenLayers;
-        this.seed = seed;
         this.funcName = funcName;
-        this.dataset = d;
         weights = new double[hiddenLayers + 1][][];
         biases = new double[hiddenLayers + 1][][];
         outputs = new double[hiddenLayers + 1][][];
+        derivatives = new double[hiddenLayers + 1][][];
         gradients = new double[hiddenLayers + 1][][];
         predictions = new int[d.testData.length];
+        this.useSoftmax = useSoftmax;
+        this.useMB = useMB;
+        this.batchSize = batchSize;
     }
 
     public void initializeNN() {
-        double lower, upper, denom;
-        double nom = Math.sqrt(6.0);
         Random rand = new Random(seed);
         // Initialize weights
-        for (int i = 0; i < hiddenLayers + 1; i++) {
-            if (i == 0) {
-                denom = Math.sqrt(inputNodes + hiddenNodes);
-                upper = nom / denom;
-                lower = upper * -1.0;
-                weights[i] = Matrix.createMatrix(inputNodes, hiddenNodes, lower,
-                        upper, rand);
-            } else if (i == hiddenLayers) {
-                denom = Math.sqrt(hiddenNodes + outputNodes);
-                upper = nom / denom;
-                lower = upper * -1.0;
-                weights[i] = Matrix.createMatrix(hiddenNodes, outputNodes, lower,
-                        upper, rand);
-            } else {
-                denom = Math.sqrt(2 * hiddenNodes);
-                upper = nom / denom;
-                lower = upper * -1.0;
-                weights[i] = Matrix.createMatrix(hiddenNodes, hiddenNodes, lower,
-                        upper, rand);
-            }
+        if (funcName == ActivationHelper.RELU) {
+            heInitialization(rand);
+        } else {
+            xavierInitialization(rand);
         }
         // Initialize biases
         for (int i = 0; i < hiddenLayers + 1; i++) {
-            if (i == hiddenLayers) {
-                // Biases for the output layer
-                biases[i] = Matrix.createMatrix(1, outputNodes, 0, 1, rand);
-            } else {
-                // Biases for hidden layers
-                biases[i] = Matrix.createMatrix(1, hiddenNodes, 0, 1, rand);
-            }
+            biases[i] = Matrix.createMatrix(1, nodeCounts[i + 1], 0, 1, rand);
         }
         // Initialize activation function
         activFunc = ActivationHelper.getFunction(funcName);
     }
 
+    private void xavierInitialization(Random rand) {
+        double lower, upper;
+        double nom = 6.0;
+        for (int i = 0; i < hiddenLayers + 1; i++) {
+            upper = Math.sqrt(nom / (nodeCounts[i] + nodeCounts[i + 1]));
+            lower = upper * -1.0;
+            weights[i] = Matrix.createMatrix(nodeCounts[i], nodeCounts[i + 1],
+                    lower, upper, rand);
+        }
+    }
+
+    private void heInitialization(Random rand) {
+        double lower, upper;
+        double nom = 2.0;
+        for (int i = 0; i < hiddenLayers + 1; i++) {
+            upper = Math.sqrt(nom / nodeCounts[i]);
+            lower = upper * -1.0;
+            weights[i] = Matrix.createMatrix(nodeCounts[i], nodeCounts[i + 1],
+                    lower, upper, rand);
+        }
+    }
+
     public void runNN() {
-        int iter = 0;
-        double globalError;
-        do {
-            System.out.println("Iteration: " + iter);
-            globalError = 0.0;
-            for (int i = 0; i < dataset.trainData.length; i++) {
-                feedforward(dataset.trainData[i]);
-                backpropagation(dataset.trainData[i], dataset.targets[i]);
-//                globalError += 0.5 * (Math.pow(dataset.targets[i][0][0] - outputs[hiddenLayers][0][0], 2));
-                globalError += calculateMSE(i);
-            }
-            iter++;
-        } while (iter < epochs && globalError > errorThresh);
-
-        System.out.println("Training finished @ " + iter);
-
+        if (useMB) {
+            runMiniBatch();
+        } else {
+            runSGD();
+        }
         for (int i = 0; i < dataset.testData.length; i++) {
             feedforward(dataset.testData[i]);
-            double[][] o = outputs[hiddenLayers];
-            int predIdx = getPredictionIndex(o[0]);
+            int predIdx = getPredictionIndex(outputs[hiddenLayers][0]);
             int labelIdx = getLabelIndex(dataset.testLabels[i][0]);
             if (predIdx == labelIdx) {
                 predictions[i] = 1;
@@ -119,61 +108,147 @@ public class NN {
         }
     }
 
+    public void runSGD() {
+        int iter = 0;
+        double globalError;
+        do {
+            globalError = 0.0;
+            for (int i = 0; i < dataset.trainData.length; i++) {
+                feedforward(dataset.trainData[i]);
+                calculateGradients(dataset.trainData[i], dataset.targets[i]);
+                updateWeights(gradients);
+                globalError += calculateLoss(i);
+            }
+            System.out.println("Iteration: " + iter + " / Error: " + globalError + " (" + lrate + ")");
+            iter++;
+//            updateLearningRate(iter);
+        } while (iter < epochs && globalError > errorThresh);
+        System.out.println("Training finished @ " + iter);
+    }
+
+    public void runMiniBatch() {
+        int bSize;
+        int bIndex;
+        int iter = 0;
+        double globalError, batchError;
+        int[] batchSizes = getBatchSizes();
+        double[][][] cumGradients = new double[hiddenLayers + 1][][];
+        for (int i = 0; i < hiddenLayers + 1; i++) {
+            cumGradients[i] = new double[nodeCounts[i]][nodeCounts[i + 1]];
+        }
+        do {
+            bIndex = 0;
+            globalError = 0.0;
+            for (int i = 0; i < dataset.trainData.length; ) {
+                batchError = 0.0;
+                bSize = batchSizes[bIndex];
+                for (int j = 0; j < bSize; j++) {
+                    feedforward(dataset.trainData[i + j]);
+                    calculateGradients(dataset.trainData[i + j],
+                            dataset.targets[i + j]);
+                    for (int k = 0; k < hiddenLayers + 1; k++) {
+                        Matrix.sum(cumGradients[k], gradients[k]);
+                    }
+                    batchError += calculateLoss(i + j);
+                }
+                for (int j = 0; j < hiddenLayers + 1; j++) {
+                    Matrix.scale(cumGradients[j], 1 / (double) bSize);
+                }
+                updateWeights(cumGradients);
+                for (int j = 0; j < hiddenLayers + 1; j++) {
+                    Matrix.reset(cumGradients[j]);
+                }
+                globalError += (batchError / (double) bSize);
+                bIndex++;
+                i += bSize;
+            }
+            System.out.println("Iteration: " + iter + " / Error: " + globalError + " (" + lrate + ")");
+            iter++;
+//            updateLearningRate(iter);
+        } while (iter < epochs && globalError > errorThresh);
+        System.out.println("Training finished @ " + iter);
+    }
+
     public void feedforward(double[][] input) {
         for (int i = 0; i < hiddenLayers + 1; i++) {
             if (i == 0) {
                 outputs[i] = Matrix.multiply(input, weights[i]);
+                Matrix.sum(outputs[i], biases[i]);
+                activFunc.applyFunction(outputs[i]);
             } else {
                 outputs[i] = Matrix.multiply(outputs[i - 1], weights[i]);
+                Matrix.sum(outputs[i], biases[i]);
+                if (i == hiddenLayers) {
+                    if (useSoftmax) {
+                        SoftMax.softmax(outputs[i]);
+                    } else {
+                        activFunc.applyFunction(outputs[i]);
+                    }
+                }
             }
-            Matrix.sum(outputs[i], biases[i]);
-            activFunc.applyFunction(outputs[i]);
         }
     }
 
-    public void backpropagation(double[][] input, double[][] target) {
-        // Calculate error gradients
+    private void calculateGradients(double[][] input, double[][] target) {
         for (int i = hiddenLayers; i >= 0; i--) {
             if (i == hiddenLayers) {
-                double[][] error = Matrix.subtract(target, outputs[i]);
-                gradients[i] = activFunc.applyDerivative(outputs[i]);
-                Matrix.elementMultiply(gradients[i], error);
+                if (useSoftmax) {
+                    derivatives[i] = Matrix.subtract(target, outputs[i]);
+                } else {
+                    double[][] loss = Matrix.subtract(target, outputs[i]);
+                    derivatives[i] = activFunc.applyDerivative(outputs[i]);
+                    Matrix.elementMultiply(derivatives[i], loss);
+                }
             } else {
-                double[][] weightedErrors = Matrix.multiply(gradients[i + 1],
+                double[][] weightedDerv = Matrix.multiply(derivatives[i + 1],
                         Matrix.transpose(weights[i + 1]));
-                gradients[i] = activFunc.applyDerivative(outputs[i]);
-                Matrix.elementMultiply(gradients[i], weightedErrors);
+                derivatives[i] = activFunc.applyDerivative(outputs[i]);
+                Matrix.elementMultiply(derivatives[i], weightedDerv);
             }
         }
-        // Calculate weight corrections & update weights
-        double[][] delta;
         for (int i = 0; i < hiddenLayers + 1; i++) {
             if (i == 0) {
-                delta = Matrix.multiply(Matrix.transpose(input), gradients[i]);
+                gradients[i] = Matrix.multiply(Matrix.transpose(input),
+                        derivatives[i]);
             } else {
-                delta = Matrix.multiply(Matrix.transpose(outputs[i - 1]), gradients[i]);
+                gradients[i] = Matrix.multiply(Matrix.transpose(outputs[i - 1]),
+                        derivatives[i]);
             }
-            Matrix.scale(delta, lrate);
-            Matrix.sum(weights[i], delta);
         }
-        // Calculate bias corrections & update biases
+    }
+
+    private void updateWeights(double[][][] gradients) {
         for (int i = 0; i < hiddenLayers + 1; i++) {
             Matrix.scale(gradients[i], lrate);
+            Matrix.sum(weights[i], gradients[i]);
             Matrix.sum(biases[i], gradients[i]);
         }
     }
 
-    private double calculateMSE(int targetIdx) {
-        double[] predicted = outputs[hiddenLayers][0];
-        double[] actual = dataset.targets[targetIdx][0];
+    private void updateLearningRate(int currEpoch) {
+        double decay = 1 - (currEpoch / (double) epochs);
+        double tmpRate = lrate * decay;
+        lrate = Math.max(0.01, tmpRate);
+    }
+
+    private double calculateLoss(int targetIdx) {
         assert (outputs[hiddenLayers].length == 1);
-        assert (predicted.length == actual.length);
-        double error = 0.0;
-        for (int i = 0; i < predicted.length; i++) {
-            error += Math.pow(actual[i] - predicted[i], 2);
+        double[] output = outputs[hiddenLayers][0];
+        double[] target = dataset.targets[targetIdx][0];
+        assert (output.length == target.length);
+        double loss = 0.0;
+        if (useSoftmax) {
+            for (int i = 0; i < output.length; i++) {
+                loss += (Math.log(output[i] + 1e-9) * target[i]);
+            }
+            return (loss * -1.0) / (double) output.length;
+        } else {
+            for (int i = 0; i < output.length; i++) {
+                loss += Math.pow(target[i] - output[i], 2);
+            }
+            loss = loss / (double) output.length;
+            return loss;
         }
-        error = error / (double) predicted.length;
-        return error;
     }
 
     private int getLabelIndex(int[] labels) {
@@ -199,5 +274,20 @@ public class NN {
 
     public int[] getPredictions() {
         return this.predictions;
+    }
+
+    private int[] getBatchSizes() {
+        int[] batchSizes;
+        int batchCount = dataset.trainData.length / batchSize;
+        int residual = dataset.trainData.length % batchSize;
+        if (residual > 0) {
+            batchSizes = new int[batchCount + 1];
+            Arrays.fill(batchSizes, batchSize);
+            batchSizes[batchSizes.length - 1] = residual;
+        } else {
+            batchSizes = new int[batchCount];
+            Arrays.fill(batchSizes, batchSize);
+        }
+        return batchSizes;
     }
 }

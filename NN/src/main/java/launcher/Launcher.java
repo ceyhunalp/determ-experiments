@@ -10,67 +10,53 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
-public class Launcher<target> {
+public class Launcher {
 
     public static void launchNNBenchmark(Dataset d) {
-        NN nn = new NN(1000, 0.2, 0.1, 28 * 28, 28 * 28, 10, 1, 47, "sigmoid",
-                d);
+        int[] nodeCounts = {28 * 28, 64, 10};
+        NN nn = new NN(20, 0.01, 0.1, nodeCounts, 1, 19, true, false, 50,
+                "relu", d);
         nn.initializeNN();
         nn.runNN();
         int[] predictions = nn.getPredictions();
         int success = 0;
-        for (int i = 0; i < predictions.length; i++) {
-            if (predictions[i] == 1) {
+        for (int prediction : predictions) {
+            if (prediction == 1) {
                 success++;
             }
         }
         System.out.println("Success: " + success + " Total: " + predictions.length);
     }
 
-//    public static void readMNISTFile() throws IOException {
-//        String file = "/Users/alp/Downloads/Reduced MNIST Data/Reduced " +
-//                "Trainging data/8/5079.jpg";
-//
-//        BufferedImage inImage = ImageIO.read(new File(file));
-//        final byte[] pixels = ((DataBufferByte) inImage.getRaster().getDataBuffer()).getData();
-//        int width = inImage.getWidth();
-//        int height = inImage.getHeight();
-//
-//        int[] result = new int[height * width];
-//        for (int i = 0; i < width * height; i++) {
-//            result[i] = 255 - (pixels[i] & 0xFF);
-//            System.out.print(result[i] + " ");
-//        }
-//        System.out.println();
-//
-//        BufferedImage image = new BufferedImage(width, height,
-//                BufferedImage.TYPE_BYTE_GRAY);
-//        WritableRaster raster = image.getRaster();
-//        raster.setPixels(0, 0, width, height, result);
-//        File outfile = new File("./saved.jpg");
-//        ImageIO.write(image, "jpg", outfile);
-//    }
-
     public static Dataset readMNISTDataset(String trainBase, String testBase) throws IOException {
-        List<Path> trainFiles = Files.walk(Paths.get(trainBase), 2)
+        List<Path> trainPaths = Files.walk(Paths.get(trainBase), 2)
                 .filter(Files::isRegularFile)
-                .filter(path -> !path.toString().contains("DS_Store"))
-                .toList();
-        List<Path> testFiles = Files.walk(Paths.get(testBase), 2)
+                .filter(path -> !path.toString().contains("extra"))
+                .filter(path -> !path.toString().contains("DS_Store")).toList();
+        List<Path> testPaths = Files.walk(Paths.get(testBase), 2)
                 .filter(Files::isRegularFile)
-                .filter(path -> !path.toString().contains("DS_Store"))
-                .toList();
+                .filter(path -> !path.toString().contains("extra"))
+                .filter(path -> !path.toString().contains("DS_Store")).toList();
 
-        int trainSize = trainFiles.size();
-        int testSize = testFiles.size();
+        List<Path> trainList = new ArrayList<>(trainPaths);
+        List<Path> testList = new ArrayList<>(testPaths);
+        Collections.shuffle(trainList, new Random(87));
+        Collections.shuffle(testList, new Random(87));
+
+        int trainSize = trainList.size();
+        int testSize = testList.size();
         double[][][] trainData = new double[trainSize][1][];
         double[][][] targets = new double[trainSize][1][];
         double[][][] testData = new double[testSize][1][];
         int[][][] testLabels = new int[testSize][1][];
-        for (int i = 0; i < trainSize; i++) {
-            Path p = trainFiles.get(i);
+
+        for (int i = 0; i < trainList.size(); i++) {
+            Path p = trainList.get(i);
             BufferedImage image = ImageIO.read(p.toFile());
             final byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
             int width = image.getWidth();
@@ -83,8 +69,8 @@ public class Launcher<target> {
             targets[i][0] = getTarget(p.toString());
         }
 
-        for (int i = 0; i < testSize; i++) {
-            Path p = testFiles.get(i);
+        for (int i = 0; i < testList.size(); i++) {
+            Path p = testList.get(i);
             BufferedImage image = ImageIO.read(p.toFile());
             final byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
             int width = image.getWidth();
@@ -96,12 +82,14 @@ public class Launcher<target> {
             testData[i][0] = result;
             testLabels[i][0] = getTestLabels(p.toString());
         }
+        System.out.println(trainPaths.size() + " " + testPaths.size());
         return new Dataset(trainData, targets, testData, testLabels);
     }
 
     public static void main(String[] args) throws IOException {
         Dataset d = readMNISTDataset(args[0], args[1]);
         launchNNBenchmark(d);
+
     }
 
     private static double[] getTarget(String path) {
