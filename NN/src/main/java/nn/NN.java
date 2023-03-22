@@ -46,7 +46,7 @@ public class NN {
         outputs = new double[hiddenLayers + 1][][];
         derivatives = new double[hiddenLayers + 1][][];
         gradients = new double[hiddenLayers + 1][][];
-        predictions = new int[d.testData.length];
+        predictions = new int[d.testImages.length];
         this.useSoftmax = useSoftmax;
         this.useMB = useMB;
         this.batchSize = batchSize;
@@ -96,11 +96,10 @@ public class NN {
         } else {
             runSGD();
         }
-        for (int i = 0; i < dataset.testData.length; i++) {
-            feedforward(dataset.testData[i]);
+        for (int i = 0; i < dataset.testImages.length; i++) {
+            feedforward(dataset.testImages[i]);
             int predIdx = getPredictionIndex(outputs[hiddenLayers][0]);
-            int labelIdx = getLabelIndex(dataset.testLabels[i][0]);
-            if (predIdx == labelIdx) {
+            if (predIdx == dataset.testLabels[i]) {
                 predictions[i] = 1;
             } else {
                 predictions[i] = 0;
@@ -113,9 +112,9 @@ public class NN {
         double globalError;
         do {
             globalError = 0.0;
-            for (int i = 0; i < dataset.trainData.length; i++) {
-                feedforward(dataset.trainData[i]);
-                calculateGradients(dataset.trainData[i], dataset.targets[i]);
+            for (int i = 0; i < dataset.trainImages.length; i++) {
+                feedforward(dataset.trainImages[i]);
+                calculateGradients(dataset.trainImages[i], dataset.targets[i]);
                 updateWeights(gradients);
                 globalError += calculateLoss(i);
             }
@@ -139,12 +138,12 @@ public class NN {
         do {
             bIndex = 0;
             globalError = 0.0;
-            for (int i = 0; i < dataset.trainData.length; ) {
+            for (int i = 0; i < dataset.trainImages.length; ) {
                 batchError = 0.0;
                 bSize = batchSizes[bIndex];
                 for (int j = 0; j < bSize; j++) {
-                    feedforward(dataset.trainData[i + j]);
-                    calculateGradients(dataset.trainData[i + j],
+                    feedforward(dataset.trainImages[i + j]);
+                    calculateGradients(dataset.trainImages[i + j],
                             dataset.targets[i + j]);
                     for (int k = 0; k < hiddenLayers + 1; k++) {
                         Matrix.sum(cumGradients[k], gradients[k]);
@@ -251,15 +250,6 @@ public class NN {
         }
     }
 
-    private int getLabelIndex(int[] labels) {
-        for (int i = 0; i < labels.length; i++) {
-            if (labels[i] == 1) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     private int getPredictionIndex(double[] prediction) {
         int maxIdx = 0;
         double maxVal = prediction[0];
@@ -278,8 +268,8 @@ public class NN {
 
     private int[] getBatchSizes() {
         int[] batchSizes;
-        int batchCount = dataset.trainData.length / batchSize;
-        int residual = dataset.trainData.length % batchSize;
+        int batchCount = dataset.trainImages.length / batchSize;
+        int residual = dataset.trainImages.length % batchSize;
         if (residual > 0) {
             batchSizes = new int[batchCount + 1];
             Arrays.fill(batchSizes, batchSize);

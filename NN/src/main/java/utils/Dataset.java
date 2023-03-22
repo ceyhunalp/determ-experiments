@@ -2,16 +2,16 @@ package utils;
 
 public class Dataset {
 
-    public double[][][] trainData;
+    public double[][][] trainImages;
     public double[][][] targets;
-    public double[][][] testData;
-    public int[][][] testLabels;
+    public double[][][] testImages;
+    public int[] testLabels;
 
     public Dataset(double[][][] train, double[][][] targets,
-                   double[][][] test, int[][][] labels) {
-        this.trainData = train;
+                   double[][][] test, int[] labels) {
+        this.trainImages = train;
         this.targets = targets;
-        this.testData = test;
+        this.testImages = test;
         this.testLabels = labels;
     }
 }
