@@ -10,7 +10,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
 public class MNISTReader {
 
@@ -57,10 +60,6 @@ public class MNISTReader {
                 inTest.read(dataBuf, 0, 1);
                 testImages[i][0][j] = (dataBuf[0] & 0xFF) / 255.f;
             }
-        }
-
-        for (int i = 0; i < 10; i++) {
-            System.out.println(i + " " + Arrays.toString(targets[i][0]));
         }
         return new Dataset(trainImages, targets, testImages, testLabels);
     }
