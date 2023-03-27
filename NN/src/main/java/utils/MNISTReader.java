@@ -61,6 +61,10 @@ public class MNISTReader {
                 testImages[i][0][j] = (dataBuf[0] & 0xFF) / 255.f;
             }
         }
+        inTrain.close();
+        inTrainLabel.close();
+        inTest.close();
+        inTestLabel.close();
         return new Dataset(trainImages, targets, testImages, testLabels);
     }
 
