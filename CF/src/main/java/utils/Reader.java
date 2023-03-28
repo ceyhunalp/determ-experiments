@@ -51,8 +51,7 @@ public class Reader {
                     actualRatings.add(rating);
                 }
             }
-            ArrayList<Integer> userIDs = new ArrayList<>();
-            userIDs.addAll(userIDSet);
+            ArrayList<Integer> userIDs = new ArrayList<>(userIDSet);
             Collections.sort(userIDs);
             datasets.add(i, new Dataset(trainingSet, testSet, actualRatings,
                     userIDs));
