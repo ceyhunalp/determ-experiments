@@ -17,17 +17,11 @@ public class UserPair {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UserPair userPair = (UserPair) o;
-//        return firstID == userPair.firstID && secondID == userPair.secondID;
-        return (firstID == userPair.firstID && secondID == userPair.secondID) || (firstID == userPair.secondID && secondID == userPair.firstID);
+        return firstID == userPair.firstID && secondID == userPair.secondID;
     }
 
     @Override
     public int hashCode() {
-        if (firstID < secondID) {
-            return Objects.hash(firstID, secondID);
-        } else {
-            return Objects.hash(secondID, firstID);
-        }
-//        return Objects.hash(firstID, secondID);
+        return Objects.hash(firstID, secondID);
     }
 }
