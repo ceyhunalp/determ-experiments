@@ -3,14 +3,13 @@ import utils.Dataset;
 import utils.Reader;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class Launcher {
 
-    public static void launchCFBenchmark(ArrayList<Dataset> datasets) {
-
-        for (int i = 0; i < datasets.size(); i++) {
-            CF cf = new CF(datasets.get(i));
+    public static void launchCFBenchmark(String dir, int foldNum) throws IOException {
+        for (int i = 0; i < foldNum; i++) {
+            Dataset d = Reader.readCVDataset(dir, i);
+            CF cf = new CF(d);
             cf.calculateAverageRatings();
             cf.calculateSimilarityScores();
             cf.makePredictions();
@@ -22,7 +21,6 @@ public class Launcher {
     }
 
     public static void main(String[] args) throws IOException {
-        ArrayList<Dataset> datasets = Reader.readCVDataset(args[0], 5);
-        launchCFBenchmark(datasets);
+        launchCFBenchmark(args[0], Integer.parseInt(args[1]));
     }
 }
