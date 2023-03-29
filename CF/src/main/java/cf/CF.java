@@ -24,7 +24,7 @@ public class CF {
     }
 
     public void makePredictions() {
-        HashMap<Integer, HashMap<Integer, Integer>> trainingSet = dataset.trainingSet;
+        HashMap<Integer, HashMap<Integer, Double>> trainingSet = dataset.trainingSet;
         for (PredictionPair pair : dataset.testSet) {
             double prediction = avgUserRatings.get(pair.userID);
             double numer = 0.0;
@@ -34,7 +34,7 @@ public class CF {
                 for (SimScore s : simScores) {
                     if (s.score > THRESHOLD && isCommonItem(s.userID, pair.itemID)) {
                         double otherAvg = avgUserRatings.get(s.userID);
-                        double otherRating = (double) trainingSet.get(s.userID).get(pair.itemID);
+                        double otherRating = trainingSet.get(s.userID).get(pair.itemID);
                         numer += (s.score * (otherRating - otherAvg));
                         denom += s.score;
                     }
@@ -85,8 +85,8 @@ public class CF {
     }
 
     private double getScore(int firstUID, int secondUID) {
-        HashMap<Integer, Integer> u1Ratings = dataset.trainingSet.get(firstUID);
-        HashMap<Integer, Integer> u2Ratings = dataset.trainingSet.get(secondUID);
+        HashMap<Integer, Double> u1Ratings = dataset.trainingSet.get(firstUID);
+        HashMap<Integer, Double> u2Ratings = dataset.trainingSet.get(secondUID);
 
         Set<Integer> intersection = new HashSet<>(u1Ratings.keySet());
         Set<Integer> u2Items = u2Ratings.keySet();
@@ -98,8 +98,8 @@ public class CF {
         double u1Denom = 0.0;
         double u2Denom = 0.0;
         for (Integer item : intersection) {
-            double firstPair = (double) u1Ratings.get(item) - firstAvg;
-            double secondPair = (double) u2Ratings.get(item) - secondAvg;
+            double firstPair = u1Ratings.get(item) - firstAvg;
+            double secondPair = u2Ratings.get(item) - secondAvg;
             numer += firstPair * secondPair;
             u1Denom += Math.pow(firstPair, 2);
             u2Denom += Math.pow(secondPair, 2);
@@ -112,8 +112,8 @@ public class CF {
         for (var urEntry : dataset.trainingSet.entrySet()) {
             int userID = urEntry.getKey();
             int totalRating = 0;
-            HashMap<Integer, Integer> ratings = urEntry.getValue();
-            for (Map.Entry<Integer, Integer> entry : ratings.entrySet()) {
+            HashMap<Integer, Double> ratings = urEntry.getValue();
+            for (Map.Entry<Integer, Double> entry : ratings.entrySet()) {
                 totalRating += entry.getValue();
             }
             avgUserRatings.put(userID, totalRating / (double) ratings.size());

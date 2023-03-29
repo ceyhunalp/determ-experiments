@@ -15,7 +15,7 @@ public class Reader {
     public static ArrayList<Dataset> readCVDataset(String dir, int count) throws IOException {
         ArrayList<Dataset> datasets = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
-            HashMap<Integer, HashMap<Integer, Integer>> trainingSet = new HashMap<>();
+            HashMap<Integer, HashMap<Integer, Double>> trainingSet = new HashMap<>();
             HashSet<Integer> userIDSet = new HashSet<>();
             Path path = Paths.get(dir, String.format("r%d.train", i + 1));
             try (BufferedReader br = new BufferedReader(new FileReader(String.valueOf(path)))) {
@@ -25,10 +25,10 @@ public class Reader {
                     String[] tokens = line.split("::");
                     int userID = Integer.parseInt(tokens[0]);
                     int itemID = Integer.parseInt(tokens[1]);
-                    int rating = Integer.parseInt(tokens[2]);
+                    double rating = Double.parseDouble(tokens[2]);
                     if (!trainingSet.containsKey(userID)) {
                         // Add (item, rating) pair to the HashMap
-                        HashMap<Integer, Integer> itemRatings = new HashMap<>();
+                        HashMap<Integer, Double> itemRatings = new HashMap<>();
                         itemRatings.put(itemID, rating);
                         trainingSet.put(userID, itemRatings);
                     } else {
@@ -38,7 +38,7 @@ public class Reader {
                 }
             }
             ArrayList<PredictionPair> testSet = new ArrayList<>();
-            ArrayList<Integer> actualRatings = new ArrayList<>();
+            ArrayList<Double> actualRatings = new ArrayList<>();
             path = Paths.get(dir, String.format("r%d.test", i + 1));
             try (BufferedReader br = new BufferedReader(new FileReader(String.valueOf(path)))) {
                 String line;
@@ -46,7 +46,7 @@ public class Reader {
                     String[] tokens = line.split("::");
                     int userID = Integer.parseInt(tokens[0]);
                     int itemID = Integer.parseInt(tokens[1]);
-                    int rating = Integer.parseInt(tokens[2]);
+                    double rating = Double.parseDouble(tokens[2]);
                     testSet.add(new PredictionPair(userID, itemID));
                     actualRatings.add(rating);
                 }

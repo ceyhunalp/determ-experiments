@@ -5,14 +5,14 @@ import java.util.HashMap;
 
 public class Dataset {
 
-    public HashMap<Integer, HashMap<Integer, Integer>> trainingSet;
+    public HashMap<Integer, HashMap<Integer, Double>> trainingSet;
     public ArrayList<PredictionPair> testSet;
-    public ArrayList<Integer> actualRatings;
+    public ArrayList<Double> actualRatings;
     public ArrayList<Integer> userIDs;
 
-    public Dataset(HashMap<Integer, HashMap<Integer, Integer>> trainingSet,
+    public Dataset(HashMap<Integer, HashMap<Integer, Double>> trainingSet,
                    ArrayList<PredictionPair> testSet,
-                   ArrayList<Integer> actualRatings,
+                   ArrayList<Double> actualRatings,
                    ArrayList<Integer> userIDs) {
         this.trainingSet = trainingSet;
         this.testSet = testSet;
