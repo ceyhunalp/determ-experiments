@@ -1,18 +1,18 @@
 package launcher;
 
 import nn.NN;
+import utils.CIFARReader;
 import utils.Dataset;
-import utils.MNISTReader;
 
 import java.io.IOException;
 
 public class Launcher {
 
-
     public static void launchNNBenchmark(Dataset d) {
-        int[] nodeCounts = {MNISTReader.IMG_SIZE, 64, MNISTReader.CLASS_SIZE};
-        NN nn = new NN(20, 0.01, 0.1, nodeCounts, 1, 19, false, false, 50,
-                "sigmoid", d);
+//        int[] nodeCounts = {MNISTReader.IMG_SIZE, 64, MNISTReader.CLASS_SIZE};
+        int[] nodeCounts = {CIFARReader.INPUT_SIZE, 128, CIFARReader.CLASS_SIZE};
+        NN nn = new NN(40, 0.01, 0.1, nodeCounts, 1, 67, true, false, 128,
+                "relu", d);
         nn.initializeNN();
         nn.runNN();
         int[] predictions = nn.getPredictions();
@@ -27,10 +27,12 @@ public class Launcher {
 
 
     public static void main(String[] args) throws IOException {
-        Dataset d = MNISTReader.readReducedDataset(args[0], args[1]);
-        launchNNBenchmark(d);
+//        Dataset d = MNISTReader.readReducedDataset(args[0], args[1]);
+//        launchNNBenchmark(d);
 //        Dataset d = MNISTReader.readDataset(args[0], args[1], args[2], args[3]);
 //        launchNNBenchmark(d);
+        Dataset d = CIFARReader.readDataset(args[0], args[1], args[2], args[3]);
+        launchNNBenchmark(d);
     }
 
 
