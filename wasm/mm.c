@@ -109,17 +109,18 @@ void matrixMultiply(int dim, int nan_rate, int exec_count, int warmup_count, cha
         }
         clock_gettime(CLOCK_MONOTONIC, &end);
         if (cnt >= warmup_count) {
-            exec_times[cnt] = (end.tv_sec - start.tv_sec) * 1000000000;
-            exec_times[cnt] += (end.tv_nsec - start.tv_nsec);
+            exec_times[cnt - warmup_count] = (end.tv_sec - start.tv_sec) * 1000000000;
+            exec_times[cnt - warmup_count] += (end.tv_nsec - start.tv_nsec);
         }
     }
     free(m1);
     free(m2);
     free(result);
-//    for (int i = 0; i < exec_count; i++) {
-//        printf("%lu\n", exec_times[i]);
-//    }
-    print_measurements(exec_times, exec_count, dim, nan_rate, outfile);
+    for (int i = 0; i < exec_count; i++) {
+        printf("%lu\n", exec_times[i]);
+    }
+    printf("=====\n");
+//    print_measurements(exec_times, exec_count, dim, nan_rate, outfile);
     free(exec_times);
 //    printMatrix(result, dim);
 }
