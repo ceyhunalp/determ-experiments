@@ -1,7 +1,11 @@
 **/cmake-build-debug/
+**/compiled/
+**/backup/
 wasm/*.wasm
 
 *.class
 */target/*
 results/*
 mnist/
+movielens/
+cnn/
