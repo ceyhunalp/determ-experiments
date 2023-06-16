@@ -21,7 +21,7 @@ void printMatrix(double *m, int dim) {
     printf("-----\n");
 }
 
-void print_measurements(unsigned long *times, int exec_count, int dim, int nan_rate, char *outfile) {
+void print_measurements(double *times, int exec_count, int dim, int nan_rate, char *outfile) {
     printf("File: %s\n", outfile);
     FILE *fp;
     errno = 0;
@@ -31,13 +31,12 @@ void print_measurements(unsigned long *times, int exec_count, int dim, int nan_r
         exit(EXIT_FAILURE);
     }
     for (int i = 0; i < exec_count; ++i) {
-        fprintf(fp, "%ld\n", times[i]);
+        fprintf(fp, "%.5f\n", times[i]);
     }
     fclose(fp);
 }
 
-void populate_matrix(double *m, int dim, int nan_rate, int seed) {
-    srand(seed);
+void populate_matrix(double *m, int dim, int nan_rate) {
     if (nan_rate == 100) {
         for (int i = 0; i < dim * dim; i++) {
             m[i] = 0.0 / 0.0;
@@ -62,37 +61,20 @@ void populate_matrix(double *m, int dim, int nan_rate, int seed) {
     }
 }
 
-void matrixMultiply(int dim, int nan_rate, int exec_count, int warmup_count, char *outfile) {
+void matrixMultiply(int dim, int nan_rate, int exec_count, int warmup_count, int seed, char *outfile) {
     double *m1 = (double *) malloc(dim * dim * sizeof(double));
     double *m2 = (double *) malloc(dim * dim * sizeof(double));
     double *result = (double *) malloc(dim * dim * sizeof(double));
     unsigned char *buf_result = (unsigned char *) malloc(dim * dim * sizeof(double));
 
-    unsigned long *exec_times = (unsigned long *) malloc(sizeof(long) * exec_count);
-//    unsigned long exec_times[exec_count];
+    double *exec_times = (double *) malloc(sizeof(double) * exec_count);
     struct timespec start, end;
 
-    populate_matrix(m1, dim, nan_rate, 621);
-    populate_matrix(m2, dim, nan_rate, 236);
-
-//    printMatrix(m1, dim);
-//    printMatrix(m2, dim);
+    srand(seed);
+    populate_matrix(m1, dim, nan_rate);
+    populate_matrix(m2, dim, nan_rate);
 
     double tmp;
-//    if (warmup) {
-//        for (int cnt = 0; cnt < WARMUP_COUNT; cnt++) {
-//            for (int i = 0; i < dim; i++) {
-//                for (int j = 0; j < dim; j++) {
-//                    tmp = 0;
-//                    for (int k = 0; k < dim; k++) {
-//                        tmp += m1[i * dim + k] * m2[j + k * dim];
-//                    }
-//                    result[i * dim + j] = tmp;
-//                }
-//            }
-//        }
-//    }
-
     for (int cnt = 0; cnt < warmup_count + exec_count; cnt++) {
         clock_gettime(CLOCK_MONOTONIC, &start);
         for (int i = 0; i < dim; i++) {
@@ -109,38 +91,32 @@ void matrixMultiply(int dim, int nan_rate, int exec_count, int warmup_count, cha
         }
         clock_gettime(CLOCK_MONOTONIC, &end);
         if (cnt >= warmup_count) {
-            exec_times[cnt - warmup_count] = (end.tv_sec - start.tv_sec) * 1000000000;
-            exec_times[cnt - warmup_count] += (end.tv_nsec - start.tv_nsec);
+            exec_times[cnt - warmup_count] = (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+            exec_times[cnt - warmup_count] += (end.tv_sec - start.tv_sec);
         }
     }
     free(m1);
     free(m2);
     free(result);
     for (int i = 0; i < exec_count; i++) {
-        printf("%lu\n", exec_times[i]);
+        printf("%.5f\n", exec_times[i]);
     }
-    printf("=====\n");
 //    print_measurements(exec_times, exec_count, dim, nan_rate, outfile);
     free(exec_times);
-//    printMatrix(result, dim);
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 6) {
+    if (argc != 7) {
         fprintf(stderr, "Missing argument\n");
         exit(EXIT_FAILURE);
     }
-//    bool warmup;
-//    if (strcmp(argv[5], "-w") == 0) {
-//        warmup = true;
-//    } else {
-//        warmup = false;
-//    }
+
     int dim = atoi(argv[1]);
     int nan_rate = atoi(argv[2]);
-    int exec_count = atoi(argv[3]);
-    int warmup_count = atoi(argv[4]);
+    int warmup_count = atoi(argv[3]);
+    int exec_count = atoi(argv[4]);
+    int seed = atoi(argv[5]);
 
     assert(nan_rate == 0 || nan_rate == 1 || nan_rate == 10 || nan_rate == 100);
-    matrixMultiply(dim, nan_rate, exec_count, warmup_count, argv[5]);
+    matrixMultiply(dim, nan_rate, exec_count, warmup_count, seed, argv[6]);
 }
