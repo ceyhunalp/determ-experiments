@@ -9,6 +9,10 @@ const int m100_1[] = {37};
 
 const int m100_10[] = {2, 12, 23, 43, 44, 53, 73, 75, 76, 91};
 
+const int m200_1[] = {152};
+
+const int m200_10[] = {23, 24, 25, 36, 42, 50, 56, 68, 82, 88, 92, 96, 117, 119, 124, 146, 148, 153, 189, 199};
+
 const int m500_1[] = {10, 273, 282, 389, 475};
 
 const int m500_10[] = {7, 8, 10, 13, 16, 19, 24, 29, 30, 74, 108, 120, 153, 188, 189, 191, 202, 204, 208, 210, 212, 223,
@@ -153,6 +157,14 @@ int *get_sequence(int dim, int rate) {
             return (int *) m100_1;
         } else if (rate == 10) {
             return (int *) m100_10;
+        } else {
+            return NULL;
+        }
+    } else if (dim == 200) {
+        if (rate == 1) {
+            return (int *) m200_1;
+        } else if (rate == 10) {
+            return (int *) m200_10;
         } else {
             return NULL;
         }
