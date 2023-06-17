@@ -11,7 +11,7 @@
 #include <assert.h>
 #include <errno.h>
 
-void printMatrix(double *m, int dim) {
+void print_matrix(double *m, int dim) {
     for (int i = 0; i < dim; i++) {
         for (int j = 0; j < dim; j++) {
             printf("%.5f ", m[i * dim + j]);
@@ -61,7 +61,7 @@ void populate_matrix(double *m, int dim, int nan_rate) {
     }
 }
 
-void matrixMultiply(int dim, int nan_rate, int exec_count, int warmup_count, int seed, char *outfile) {
+void matrixMultiply(int dim, int nan_rate, int exec_count, int warmup_count, int seed) {
     double *m1 = (double *) malloc(dim * dim * sizeof(double));
     double *m2 = (double *) malloc(dim * dim * sizeof(double));
 //    double *result = (double *) malloc(dim * dim * sizeof(double));
@@ -107,7 +107,6 @@ void matrixMultiply(int dim, int nan_rate, int exec_count, int warmup_count, int
     for (int i = 0; i < exec_count; i++) {
         printf("%.5f\n", exec_times[i]);
     }
-//    print_measurements(exec_times, exec_count, dim, nan_rate, outfile);
     free(exec_times);
 }
 
@@ -124,5 +123,5 @@ int main(int argc, char *argv[]) {
     int seed = atoi(argv[5]);
 
     assert(nan_rate == 0 || nan_rate == 1 || nan_rate == 10 || nan_rate == 100);
-    matrixMultiply(dim, nan_rate, exec_count, warmup_count, seed, "");
+    matrixMultiply(dim, nan_rate, exec_count, warmup_count, seed);
 }
