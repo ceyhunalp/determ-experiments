@@ -4,6 +4,7 @@ inline=$1
 
 mkdir -p out/emcc out/wasi/noinline out/wasi/inline
 mkdir -p out/emcc out/wasi
+mkdir -p compiled/wasi compiled/emcc
 
 ./compile.sh $inline
 
