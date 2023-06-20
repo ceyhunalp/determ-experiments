@@ -1,29 +1,33 @@
 #!/bin/sh
 
 PWD="`pwd`"
-DIM=$1
-NAN_RATE=$2
-WARMUP_COUNT=$3
-EXEC_COUNT=$4
-SEED=$5
+dim=$1
+nan_rate=$2
+warmup_count=$3
+exec_count=$4
+seed=$5
+inline=$6
+
+if [ "$inline" = "1" ]; then
+        OUTDIR=${PWD}/out/wasi/inline
+else
+        OUTDIR=${PWD}/out/wasi/noinline
+fi
 
 # Run experiments
 
 echo "wasi wasmer"
-wasmer ${PWD}/compiled/wasi/mm.wasm 10 0 0 1 1
-wasmer ${PWD}/compiled/wasi/denan.wasm 10 0 0 1 1
-wasmer ${PWD}/compiled/wasi/canon.wasm 10 0 0 1 1
-#OUTFILE=${PWD}/out/wasi/base_$DIM\_$NAN_RATE\_$WARMUP_COUNT.csv
-#wasmer ${PWD}/compiled/wasi/mm.wasm $DIM $NAN_RATE $WARMUP_COUNT $EXEC_COUNT $SEED > $OUTFILE
-#OUTFILE=${PWD}/out/wasi/denan_$DIM\_$NAN_RATE\_$WARMUP_COUNT.csv
-#wasmer ${PWD}/compiled/wasi/denan.wasm $DIM $NAN_RATE $WARMUP_COUNT $EXEC_COUNT $SEED > $OUTFILE
-#OUTFILE=${PWD}/out/wasi/canon_$DIM\_$NAN_RATE\_$WARMUP_COUNT.csv
-#wasmer ${PWD}/compiled/wasi/canon.wasm $DIM $NAN_RATE $WARMUP_COUNT $EXEC_COUNT $SEED > $OUTFILE
+OUTFILE=${OUTDIR}/base_$dim\_$nan_rate.csv
+wasmer ${PWD}/compiled/wasi/mm.wasm $dim $nan_rate $warmup_count $exec_count $seed > $OUTFILE
+OUTFILE=${OUTDIR}/denan_$dim\_$nan_rate.csv
+wasmer ${PWD}/compiled/wasi/denan.wasm $dim $nan_rate $warmup_count $exec_count $seed > $OUTFILE
+OUTFILE=${OUTDIR}/canon_$dim\_$nan_rate.csv
+wasmer ${PWD}/compiled/wasi/canon.wasm $dim $nan_rate $warmup_count $exec_count $seed > $OUTFILE
 
 #echo "emcc wasmer"
-#OUTFILE=${PWD}/out/emcc/base_$DIM\_$NAN_RATE\_$WARMUP_COUNT.csv
-#wasmer ${PWD}/compiled/emcc/mm.wasm $DIM $NAN_RATE $WARMUP_COUNT $EXEC_COUNT $SEED > $OUTFILE
-#OUTFILE=${PWD}/out/emcc/denan_$DIM\_$NAN_RATE\_$WARMUP_COUNT.csv
-#wasmer ${PWD}/compiled/emcc/denan.wasm $DIM $NAN_RATE $WARMUP_COUNT $EXEC_COUNT $SEED > $OUTFILE
-#OUTFILE=${PWD}/out/emcc/canon_$DIM\_$NAN_RATE\_$WARMUP_COUNT.csv
-#wasmer ${PWD}/compiled/emcc/canon.wasm $DIM $NAN_RATE $WARMUP_COUNT $EXEC_COUNT $SEED > $OUTFILE
+#OUTFILE=${PWD}/out/emcc/base_$dim\_$nan_rate.csv
+#wasmer ${PWD}/compiled/emcc/mm.wasm $dim $nan_rate $warmup_count $exec_count $seed > $OUTFILE
+#OUTFILE=${PWD}/out/emcc/denan_$dim\_$nan_rate.csv
+#wasmer ${PWD}/compiled/emcc/denan.wasm $dim $nan_rate $warmup_count $exec_count $seed > $OUTFILE
+#OUTFILE=${PWD}/out/emcc/canon_$dim\_$nan_rate.csv
+#wasmer ${PWD}/compiled/emcc/canon.wasm $dim $nan_rate $warmup_count $exec_count $seed > $OUTFILE
