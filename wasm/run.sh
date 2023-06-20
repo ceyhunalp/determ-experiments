@@ -3,8 +3,7 @@
 inline=$1
 
 mkdir -p out/emcc out/wasi/noinline out/wasi/inline
-rm -rv ./compiled/
-mkdir -p compiled/emcc compiled/wasi
+mkdir -p out/emcc out/wasi
 
 ./compile.sh $inline
 

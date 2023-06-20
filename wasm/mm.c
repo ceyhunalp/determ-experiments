@@ -64,22 +64,21 @@ void populate_matrix(double *m, int dim, int nan_rate) {
 void matrixMultiply(int dim, int nan_rate, int exec_count, int warmup_count, int seed) {
     double *m1 = (double *) malloc(dim * dim * sizeof(double));
     double *m2 = (double *) malloc(dim * dim * sizeof(double));
-//    double *result = (double *) malloc(dim * dim * sizeof(double));
-//    unsigned char *buf_result = (unsigned char *) malloc(dim * dim * sizeof(double));
+    double *result = (double *) malloc(dim * dim * sizeof(double));
+    unsigned char *buf_result = (unsigned char *) malloc(dim * dim * sizeof(double));
 
     double *exec_times = (double *) malloc(sizeof(double) * exec_count);
     struct timespec start, end;
 
-    srand(seed);
-//    populate_matrix(m1, dim, nan_rate);
-//    populate_matrix(m2, dim, nan_rate);
+//    srand(seed);
+    srand(time(NULL));
+    populate_matrix(m1, dim, nan_rate);
+    populate_matrix(m2, dim, nan_rate);
 
     double tmp;
     for (int cnt = 0; cnt < warmup_count + exec_count; cnt++) {
-        double *result = (double *) malloc(dim * dim * sizeof(double));
-        unsigned char *buf_result = (unsigned char *) malloc(dim * dim * sizeof(double));
-        populate_matrix(m1, dim, nan_rate);
-        populate_matrix(m2, dim, nan_rate);
+//        double *result = (double *) malloc(dim * dim * sizeof(double));
+//        unsigned char *buf_result = (unsigned char *) malloc(dim * dim * sizeof(double));
         clock_gettime(CLOCK_MONOTONIC, &start);
         for (int i = 0; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
@@ -98,12 +97,13 @@ void matrixMultiply(int dim, int nan_rate, int exec_count, int warmup_count, int
             exec_times[cnt - warmup_count] = (end.tv_nsec - start.tv_nsec) / 1000000000.0;
             exec_times[cnt - warmup_count] += (end.tv_sec - start.tv_sec);
         }
-        free(result);
-        free(buf_result);
+//        free(result);
+//        free(buf_result);
     }
     free(m1);
     free(m2);
-//    free(result);
+    free(result);
+    free(buf_result);
     for (int i = 0; i < exec_count; i++) {
         printf("%.5f\n", exec_times[i]);
     }
