@@ -1,5 +1,6 @@
-package dedis.fp;
+package launcher;
 
+import dedis.fp.FPBenchmark;
 import org.apache.commons.cli.*;
 import java.io.IOException;
 
