@@ -23,7 +23,11 @@ public class MM {
         m2 = new double[dim * dim];
         result = new double[dim * dim];
         bufResult = new byte[dim * dim * DOUBLE_SIZE];
-        rand = new Random(seed);
+        if (seed < 0) {
+            rand = new Random();
+        } else {
+            rand = new Random(seed);
+        }
     }
 
     public void populateMatrix(double[] m) {
