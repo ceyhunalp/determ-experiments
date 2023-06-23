@@ -60,14 +60,26 @@ public class MM {
             for (int j = 0; j < dim; j++) {
                 tmp = 0.0;
                 for (int k = 0; k < dim; k++) {
-                    tmp += m1[i * dim + k] + m2[j + k * dim];
+                    tmp += m1[i * dim + k] * m2[j + k * dim];
                 }
                 result[i * dim + j] = tmp;
             }
         }
     }
 
+    // No canonicalization
     public void serializeResult() {
+        for (int i = 0; i < result.length; i++) {
+            long lng = Double.doubleToRawLongBits(result[i]);
+            for (int j = 0; j < DOUBLE_SIZE; j++) {
+                bufResult[i * DOUBLE_SIZE + (7 - j)] =
+                        (byte) ((lng >> ((7 - j) * 8)) & 0xff);
+            }
+        }
+    }
+
+    // Canonicalized
+    public void serializeCanonResult() {
         for (int i = 0; i < result.length; i++) {
             long lng = Double.doubleToLongBits(result[i]);
             for (int j = 0; j < DOUBLE_SIZE; j++) {
@@ -77,13 +89,29 @@ public class MM {
         }
     }
 
-    public void serializeCanonResult() {
-        for (int i = 0; i < result.length; i++) {
-            long lng = Double.doubleToRawLongBits(result[i]);
-            for (int j = 0; j < DOUBLE_SIZE; j++) {
-                bufResult[i * DOUBLE_SIZE + (7 - j)] =
-                        (byte) ((lng >> ((7 - j) * 8)) & 0xff);
+    public void printMatrix() {
+        for (int i = 0; i < dim; i++) {
+            for (int j = 0; j < dim; j++) {
+                System.out.printf("%.5f ", m1[i * dim + j]);
             }
+            System.out.println();
+        }
+        System.out.println("----");
+        for (int i = 0; i < dim; i++) {
+            for (int j = 0; j < dim; j++) {
+                System.out.printf("%.5f ", m2[i * dim + j]);
+            }
+            System.out.println();
+        }
+        System.out.println("----");
+    }
+
+    public void printResult() {
+        for (int i = 0; i < dim; i++) {
+            for (int j = 0; j < dim; j++) {
+                System.out.printf("%.5f ", result[i * dim + j]);
+            }
+            System.out.println();
         }
     }
 }
