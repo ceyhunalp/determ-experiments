@@ -1,6 +1,7 @@
 **/cmake-build-debug/
 **/compiled/
 **/backup/
+**/jars/
 wasm/*.wasm
 
 *.class

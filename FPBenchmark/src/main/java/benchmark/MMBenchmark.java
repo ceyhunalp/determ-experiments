@@ -109,57 +109,6 @@ public class MMBenchmark {
 //                stats.max());
     }
 
-//    // No canonicalization
-//    public static void serializeResult(double[] result, double[] bufResult) {
-//        for (int i = 0; i < result.length; i++) {
-//            long lng = Double.doubleToRawLongBits(result[i]);
-//            for (int j = 0; j < 8; j++) {
-//                bufResult[i * 8 + (7 - j)] =
-//                        (byte) ((lng >> ((7 - j) * 8)) & 0xff);
-//            }
-//        }
-//    }
-//
-//    // Canonicalized
-//    public static void serializeCanonResult(double[] result, double[] bufResult) {
-//        for (int i = 0; i < result.length; i++) {
-//            long lng = Double.doubleToLongBits(result[i]);
-//            for (int j = 0; j < 8; j++) {
-//                bufResult[i * 8 + (7 - j)] =
-//                        (byte) ((lng >> ((7 - j) * 8)) & 0xff);
-//            }
-//        }
-//    }
-//
-//    public static void test() {
-//        double[] result = new double[1000000];
-//        Random rand = new Random();
-//        for (int i = 0; i < 1000000; i++) {
-//            result[i] = rand.nextDouble();
-//        }
-//        double[] bufResult = new double[1000000 * 8];
-//        long start, end;
-//        double[] times = new double[10];
-//        for (int i = 0; i < 5010; i++) {
-//            start = System.nanoTime();
-//            serializeCanonResult(result, bufResult);
-//            end = System.nanoTime();
-//            if (i >= 5000) {
-//                times[i - 5000] = (end - start) / NANOSECS;
-//            }
-//        }
-//        for (double t :
-//                times) {
-//            System.out.printf("%.6f\n", t);
-//        }
-//        Stats stats = Stats.of(times);
-//        System.out.printf(String.format("%.6f,%.6f,%.6f,%.6f\n",
-//                stats.mean(),
-//                stats.sampleStandardDeviation(),
-//                stats.min(),
-//                stats.max()));
-//    }
-
     public static void main(String[] args) throws IOException {
         launchBenchmark(args);
     }
