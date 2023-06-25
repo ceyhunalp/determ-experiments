@@ -67,7 +67,7 @@ void matrixMultiply(int dim, int nan_rate, int exec_count, int warmup_count, int
     double *result = (double *) malloc(dim * dim * sizeof(double));
     unsigned char *buf_result = (unsigned char *) malloc(dim * dim * sizeof(double));
 
-    double *exec_times = (double *) malloc(sizeof(double) * exec_count);
+    double *exec_times = (double *) malloc(sizeof(double) * (warmup_count + exec_count));
     struct timespec start, end;
 
 //    srand(seed);
@@ -77,8 +77,6 @@ void matrixMultiply(int dim, int nan_rate, int exec_count, int warmup_count, int
 
     double tmp;
     for (int cnt = 0; cnt < warmup_count + exec_count; cnt++) {
-//        double *result = (double *) malloc(dim * dim * sizeof(double));
-//        unsigned char *buf_result = (unsigned char *) malloc(dim * dim * sizeof(double));
         clock_gettime(CLOCK_MONOTONIC, &start);
         for (int i = 0; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
@@ -93,19 +91,15 @@ void matrixMultiply(int dim, int nan_rate, int exec_count, int warmup_count, int
             memcpy(&buf_result[i], (unsigned char *) &result[i], sizeof(double));
         }
         clock_gettime(CLOCK_MONOTONIC, &end);
-        if (cnt >= warmup_count) {
-            exec_times[cnt - warmup_count] = (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-            exec_times[cnt - warmup_count] += (end.tv_sec - start.tv_sec);
-        }
-//        free(result);
-//        free(buf_result);
+        exec_times[cnt] = (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+        exec_times[cnt] += (end.tv_sec - start.tv_sec);
     }
     free(m1);
     free(m2);
     free(result);
     free(buf_result);
     for (int i = 0; i < exec_count; i++) {
-        printf("%.5f\n", exec_times[i]);
+        printf("%.5f\n", exec_times[warmup_count + i]);
     }
     free(exec_times);
 }
