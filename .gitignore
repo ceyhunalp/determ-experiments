@@ -3,6 +3,8 @@
 **/backup/
 **/jars/
 wasm/*.wasm
+wasm/out/
+wasm/vm-out/
 
 *.class
 */target/*
@@ -10,3 +12,6 @@ results/*
 mnist/
 movielens/
 cnn/
+old/
+
+.DS_Store

@@ -51,6 +51,30 @@ public class CF {
         return dataset.trainingSet.get(userID).containsKey(itemID);
     }
 
+    private double getScore(int firstUID, int secondUID) {
+        HashMap<Integer, Double> u1Ratings = dataset.trainingSet.get(firstUID);
+        HashMap<Integer, Double> u2Ratings = dataset.trainingSet.get(secondUID);
+
+        Set<Integer> intersection = new HashSet<>(u1Ratings.keySet());
+        Set<Integer> u2Items = u2Ratings.keySet();
+        intersection.retainAll(u2Items);
+
+        double firstAvg = avgUserRatings.get(firstUID);
+        double secondAvg = avgUserRatings.get(secondUID);
+        double numer = 0.0;
+        double u1Denom = 0.0;
+        double u2Denom = 0.0;
+        for (Integer item : intersection) {
+            double firstPair = u1Ratings.get(item) - firstAvg;
+            double secondPair = u2Ratings.get(item) - secondAvg;
+            numer += firstPair * secondPair;
+            u1Denom += Math.pow(firstPair, 2);
+            u2Denom += Math.pow(secondPair, 2);
+        }
+        double denom = Math.sqrt(u1Denom * u2Denom);
+        return numer / denom;
+    }
+
     public void calculateSimilarityScores() {
         int size = dataset.userIDs.size();
         for (int i = 0; i < size; i++) {
@@ -82,30 +106,6 @@ public class CF {
 //            Collections.sort(entry.getValue(), new SimScoreComparator());
 //            Collections.reverse(entry.getValue());
 //        }
-    }
-
-    private double getScore(int firstUID, int secondUID) {
-        HashMap<Integer, Double> u1Ratings = dataset.trainingSet.get(firstUID);
-        HashMap<Integer, Double> u2Ratings = dataset.trainingSet.get(secondUID);
-
-        Set<Integer> intersection = new HashSet<>(u1Ratings.keySet());
-        Set<Integer> u2Items = u2Ratings.keySet();
-        intersection.retainAll(u2Items);
-
-        double firstAvg = avgUserRatings.get(firstUID);
-        double secondAvg = avgUserRatings.get(secondUID);
-        double numer = 0.0;
-        double u1Denom = 0.0;
-        double u2Denom = 0.0;
-        for (Integer item : intersection) {
-            double firstPair = u1Ratings.get(item) - firstAvg;
-            double secondPair = u2Ratings.get(item) - secondAvg;
-            numer += firstPair * secondPair;
-            u1Denom += Math.pow(firstPair, 2);
-            u2Denom += Math.pow(secondPair, 2);
-        }
-        double denom = Math.sqrt(u1Denom * u2Denom);
-        return numer / denom;
     }
 
     public void calculateAverageRatings() {
