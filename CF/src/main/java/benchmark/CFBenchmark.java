@@ -65,9 +65,9 @@ public class CFBenchmark {
         removeWarmupTimes(allTimes, execTimes, wc);
         writeTimes(outdir, lib, execTimes, foldNum);
 
-        for (double t : allTimes) {
-            System.out.printf("%.6f\n", t);
-        }
+//        for (double t : allTimes) {
+//            System.out.printf("%.6f\n", t);
+//        }
     }
 
     public static void main(String[] args) throws IOException {
