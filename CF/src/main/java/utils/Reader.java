@@ -15,7 +15,7 @@ public class Reader {
     public static Dataset readCVDataset(String dir, int foldIdx) throws IOException {
         HashMap<Integer, HashMap<Integer, Double>> trainingSet = new HashMap<>();
         HashSet<Integer> userIDSet = new HashSet<>();
-        Path path = Paths.get(dir, String.format("r%d.train", foldIdx + 1));
+        Path path = Paths.get(dir, String.format("r%d.train", foldIdx));
         try (BufferedReader br = new BufferedReader(new FileReader(String.valueOf(path)))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -37,7 +37,7 @@ public class Reader {
         }
         ArrayList<PredictionPair> testSet = new ArrayList<>();
         ArrayList<Double> actualRatings = new ArrayList<>();
-        path = Paths.get(dir, String.format("r%d.test", foldIdx + 1));
+        path = Paths.get(dir, String.format("r%d.test", foldIdx));
         try (BufferedReader br = new BufferedReader(new FileReader(String.valueOf(path)))) {
             String line;
             while ((line = br.readLine()) != null) {
