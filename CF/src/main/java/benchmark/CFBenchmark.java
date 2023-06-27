@@ -15,10 +15,17 @@ public class CFBenchmark {
 
     public static double[] runCFBenchmark(CF cf, int wc, int ec) {
         long start, end;
+        int size = cf.dataset.userIDs.size();
         double[] times = new double[ec + wc];
+        for (int i = 0; i < 10000; i++) {
+            cf.calculateSimilarityScores(10);
+            cf.makePredictions();
+            cf.similarityScores.clear();
+            cf.predictions.clear();
+        }
         for (int i = 0; i < wc + ec; i++) {
             start = System.nanoTime();
-            cf.calculateSimilarityScores();
+            cf.calculateSimilarityScores(size);
             cf.makePredictions();
             end = System.nanoTime();
             times[i] = (end - start) / NANOSECS;
@@ -62,12 +69,12 @@ public class CFBenchmark {
         cf.calculateAverageRatings();
 
         allTimes = runCFBenchmark(cf, wc, ec);
-        removeWarmupTimes(allTimes, execTimes, wc);
-        writeTimes(outdir, lib, execTimes, foldNum);
+//        removeWarmupTimes(allTimes, execTimes, wc);
+//        writeTimes(outdir, lib, execTimes, foldNum);
 
-//        for (double t : allTimes) {
-//            System.out.printf("%.6f\n", t);
-//        }
+        for (double t : allTimes) {
+            System.out.printf("%.6f\n", t);
+        }
     }
 
     public static void main(String[] args) throws IOException {
