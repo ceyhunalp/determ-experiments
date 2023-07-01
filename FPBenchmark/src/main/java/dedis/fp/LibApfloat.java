@@ -2,152 +2,97 @@ package dedis.fp;
 
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
-import org.kframework.mpfr.BigFloat;
 
 import java.util.Random;
 
-public class LibApfloat extends MathLib{
+public class LibApfloat extends MathLib {
     Apfloat[] apfXs;
     Apfloat[] apfYs;
 
-    public LibApfloat(int inCount, int warmupCount, int execCount, String libName) {
-        super(inCount, warmupCount, execCount, libName);
-        apfXs = new Apfloat[inCount];
-        apfYs = new Apfloat[inCount];
+    public LibApfloat(int warmupCount, int execCount, String libName) {
+        super(warmupCount, execCount, libName);
+        apfXs = new Apfloat[this.totalCount];
+        apfYs = new Apfloat[this.totalCount];
     }
 
     @Override
     public void initInputs(int seed) {
         Random rand = new Random(seed);
-        for (int i = 0; i < inCount; i++) {
+        for (int i = 0; i < this.totalCount; i++) {
             apfXs[i] = new Apfloat(rand.nextDouble());
             apfYs[i] = new Apfloat(rand.nextDouble());
         }
     }
 
     @Override
-    public void log() {
-        int idx;
+    public double[] log() {
         long start, end;
-        Apfloat apfVal;
-
-        // Warmup for Apfloat
-        for (int i = 0; i < warmupCount; i++) {
-            idx = i % inCount;
-            apfVal = ApfloatMath.log(apfXs[idx]);
-        }
-        // Measure Apfloat
-        for (int i = 0; i < execCount; i++) {
-            idx = i % inCount;
+        for (int i = 0; i < this.totalCount; i++) {
             start = System.nanoTime();
-            apfVal = ApfloatMath.log(apfXs[idx]);
+            results[i] = ApfloatMath.log(apfXs[i]).doubleValue();
             end = System.nanoTime();
             times[i] = end - start;
         }
+        return results;
     }
 
     @Override
-    public void exp() {
-        int idx;
+    public double[] exp() {
         long start, end;
-        Apfloat apfVal;
-
-        // Warmup for Apfloat
-        for (int i = 0; i < warmupCount; i++) {
-            idx = i % inCount;
-            apfVal = ApfloatMath.exp(apfXs[idx]);
-        }
-        // Measure Apfloat
-        for (int i = 0; i < execCount; i++) {
-            idx = i % inCount;
+        for (int i = 0; i < this.totalCount; i++) {
             start = System.nanoTime();
-            apfVal = ApfloatMath.exp(apfXs[idx]);
+            results[i] = ApfloatMath.exp(apfXs[i]).doubleValue();
             end = System.nanoTime();
             times[i] = end - start;
         }
+        return results;
     }
 
     @Override
-    public void pow() {
-        int idx;
+    public double[] pow() {
         long start, end;
-        Apfloat apfVal;
-
-        // Warmup for Apfloat
-        for (int i = 0; i < warmupCount; i++) {
-            idx = i % inCount;
-            apfVal = ApfloatMath.pow(apfXs[idx], apfYs[idx]);
-        }
-        // Measure Apfloat
-        for (int i = 0; i < execCount; i++) {
-            idx = i % inCount;
+        for (int i = 0; i < this.totalCount; i++) {
             start = System.nanoTime();
-            apfVal = ApfloatMath.pow(apfXs[idx], apfYs[idx]);
+            results[i] = ApfloatMath.pow(apfXs[i], apfYs[i]).doubleValue();
             end = System.nanoTime();
             times[i] = end - start;
         }
+        return results;
     }
 
     @Override
-    public void sin() {
-        int idx;
+    public double[] sin() {
         long start, end;
-        Apfloat apfVal;
-
-        // Warmup for Apfloat
-        for (int i = 0; i < warmupCount; i++) {
-            idx = i % inCount;
-            apfVal = ApfloatMath.sin(apfXs[idx]);
-        }
-        // Measure Apfloat
-        for (int i = 0; i < execCount; i++) {
-            idx = i % inCount;
+        for (int i = 0; i < this.totalCount; i++) {
             start = System.nanoTime();
-            apfVal = ApfloatMath.sin(apfXs[idx]);
+            results[i] = ApfloatMath.sin(apfXs[i]).doubleValue();
             end = System.nanoTime();
             times[i] = end - start;
         }
+        return results;
     }
 
     @Override
-    public void cos() {
-        int idx;
+    public double[] cos() {
         long start, end;
-        Apfloat apfVal;
-
-        // Warmup for Apfloat
-        for (int i = 0; i < warmupCount; i++) {
-            idx = i % inCount;
-            apfVal = ApfloatMath.cos(apfXs[idx]);
-        }
-        // Measure Apfloat
-        for (int i = 0; i < execCount; i++) {
-            idx = i % inCount;
+        for (int i = 0; i < this.totalCount; i++) {
             start = System.nanoTime();
-            apfVal = ApfloatMath.cos(apfXs[idx]);
+            results[i] = ApfloatMath.cos(apfXs[i]).doubleValue();
             end = System.nanoTime();
             times[i] = end - start;
         }
+        return results;
     }
 
     @Override
-    public void tan() {
-        int idx;
+    public double[] tan() {
         long start, end;
-        Apfloat apfVal;
-
-        // Warmup for Apfloat
-        for (int i = 0; i < warmupCount; i++) {
-            idx = i % inCount;
-            apfVal = ApfloatMath.tan(apfXs[idx]);
-        }
-        // Measure Apfloat
-        for (int i = 0; i < execCount; i++) {
-            idx = i % inCount;
+        for (int i = 0; i < this.totalCount; i++) {
             start = System.nanoTime();
-            apfVal = ApfloatMath.tan(apfXs[idx]);
+            results[i] = ApfloatMath.tan(apfXs[i]).doubleValue();
             end = System.nanoTime();
             times[i] = end - start;
         }
+        return results;
     }
 }

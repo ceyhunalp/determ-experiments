@@ -1,61 +1,60 @@
 package dedis.fp;
 
-import java.io.File;
+import com.google.common.math.Stats;
+
 import java.io.FileWriter;
 import java.io.IOException;
 
-import com.google.common.math.Stats;
-
 public abstract class MathLib {
-    int inCount, warmupCount, execCount;
+    int totalCount, warmupCount, execCount;
     long[] times;
     String libName;
     String outfile;
+    double[] results;
 
-    public MathLib(int inCount, int warmupCount, int execCount, String libName) {
-        this.inCount = inCount;
+    public MathLib(int warmupCount, int execCount, String libName) {
+        this.totalCount = warmupCount + execCount;
         this.warmupCount = warmupCount;
         this.execCount = execCount;
         this.libName = libName;
-        times = new long[execCount];
+        times = new long[totalCount];
+        results = new double[totalCount];
     }
 
     public abstract void initInputs(int seed);
-    public abstract void log();
-    public abstract void exp();
-    public abstract void pow();
-    public abstract void sin();
-    public abstract void cos();
-    public abstract void tan();
 
-    public void execFunction(String fname) {
-        switch (fname) {
-            case "log":
-                this.log();
-                break;
-            case "exp":
-                this.exp();
-                break;
-            case "pow":
-                this.pow();
-                break;
-            case "sin":
-                this.sin();
-                break;
-            case "cos":
-                this.cos();
-                break;
-            case "tan":
-                this.tan();
-                break;
-        }
+    public abstract double[] log();
+
+    public abstract double[] exp();
+
+    public abstract double[] pow();
+
+    public abstract double[] sin();
+
+    public abstract double[] cos();
+
+    public abstract double[] tan();
+
+    public double[] execFunction(String fname) {
+        return switch (fname) {
+            case "log" -> this.log();
+            case "exp" -> this.exp();
+            case "pow" -> this.pow();
+            case "sin" -> this.sin();
+            case "cos" -> this.cos();
+            case "tan" -> this.tan();
+            default -> null;
+        };
     }
 
     public void logStats(String fname, String dirpath) throws IOException {
+        long[] execTimes = new long[this.execCount];
+        System.arraycopy(times, this.warmupCount, execTimes, 0, this.execCount);
         this.outfile = dirpath + this.libName + ".csv";
-        Stats stats = Stats.of(times);
+        Stats stats = Stats.of(execTimes);
         FileWriter fw = new FileWriter(this.outfile, true);
-        fw.write(String.format("%s, %.1f, (%f)\n",
+        fw.write("fname,avg,stddev\n");
+        fw.write(String.format("%s,%.5f,%.5f\n",
                 fname,
                 stats.mean(),
                 stats.sampleStandardDeviation()));

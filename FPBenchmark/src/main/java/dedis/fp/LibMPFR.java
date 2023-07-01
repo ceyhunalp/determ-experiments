@@ -6,150 +6,96 @@ import org.kframework.mpfr.BinaryMathContext;
 import java.math.RoundingMode;
 import java.util.Random;
 
-public class LibMPFR extends MathLib{
+public class LibMPFR extends MathLib {
     BinaryMathContext mc;
     BigFloat[] bfXs;
     BigFloat[] bfYs;
 
-    public LibMPFR(int inCount, int warmupCount, int execCount, String libName) {
-        super(inCount, warmupCount, execCount, libName);
+    public LibMPFR(int warmupCount, int execCount, String libName) {
+        super(warmupCount, execCount, libName);
         mc = BinaryMathContext.BINARY64.withRoundingMode(RoundingMode.HALF_EVEN);
-        bfXs = new BigFloat[inCount];
-        bfYs = new BigFloat[inCount];
+        bfXs = new BigFloat[this.totalCount];
+        bfYs = new BigFloat[this.totalCount];
     }
 
     @Override
     public void initInputs(int seed) {
         Random rand = new Random(seed);
-        for (int i = 0; i < inCount; i++) {
+        for (int i = 0; i < this.totalCount; i++) {
             bfXs[i] = new BigFloat(rand.nextDouble(), mc);
             bfYs[i] = new BigFloat(rand.nextDouble(), mc);
         }
     }
 
     @Override
-    public void log() {
-        int idx;
+    public double[] log() {
         long start, end;
-        BigFloat bfVal;
-
-        // Warmup for MPFR
-        for (int i = 0; i < warmupCount; i++) {
-            idx = i % inCount;
-            bfVal = bfXs[idx].log(mc);
-        }
-        // Measure MPFR
-        for (int i = 0; i < execCount; i++) {
-            idx = i % inCount;
+        for (int i = 0; i < this.totalCount; i++) {
             start = System.nanoTime();
-            bfVal = bfXs[idx].log(mc);
+            results[i] = bfXs[i].log(mc).doubleValue();
             end = System.nanoTime();
             times[i] = end - start;
         }
+        return results;
     }
 
     @Override
-    public void exp() {
-        int idx;
+    public double[] exp() {
         long start, end;
-        BigFloat bfVal;
-
-        // Warmup for MPFR
-        for (int i = 0; i < warmupCount; i++) {
-            idx = i % inCount;
-            bfVal = bfXs[idx].exp(mc);
-        }
-        // Measure MPFR
-        for (int i = 0; i < execCount; i++) {
-            idx = i % inCount;
+        for (int i = 0; i < this.totalCount; i++) {
             start = System.nanoTime();
-            bfVal = bfXs[idx].exp(mc);
+            results[i] = bfXs[i].exp(mc).doubleValue();
             end = System.nanoTime();
             times[i] = end - start;
         }
+        return results;
     }
 
     @Override
-    public void pow() {
-        int idx;
+    public double[] pow() {
         long start, end;
-        BigFloat bfVal;
-
-        // Warmup for MPFR
-        for (int i = 0; i < warmupCount; i++) {
-            idx = i % inCount;
-            bfVal = bfXs[idx].pow(bfYs[idx], mc);
-        }
-        // Measure MPFR
-        for (int i = 0; i < execCount; i++) {
-            idx = i % inCount;
+        for (int i = 0; i < this.totalCount; i++) {
             start = System.nanoTime();
-            bfVal = bfXs[idx].pow(bfYs[idx], mc);
+            results[i] = bfXs[i].pow(bfYs[i], mc).doubleValue();
             end = System.nanoTime();
             times[i] = end - start;
         }
+        return results;
     }
 
     @Override
-    public void sin() {
-        int idx;
+    public double[] sin() {
         long start, end;
-        BigFloat bfVal;
-
-        // Warmup for MPFR
-        for (int i = 0; i < warmupCount; i++) {
-            idx = i % inCount;
-            bfVal = bfXs[idx].sin(mc);
-        }
-        // Measure MPFR
-        for (int i = 0; i < execCount; i++) {
-            idx = i % inCount;
+        for (int i = 0; i < this.totalCount; i++) {
             start = System.nanoTime();
-            bfVal = bfXs[idx].sin(mc);
+            results[i] = bfXs[i].sin(mc).doubleValue();
             end = System.nanoTime();
             times[i] = end - start;
         }
+        return results;
     }
 
     @Override
-    public void cos() {
-        int idx;
+    public double[] cos() {
         long start, end;
-        BigFloat bfVal;
-
-        // Warmup for MPFR
-        for (int i = 0; i < warmupCount; i++) {
-            idx = i % inCount;
-            bfVal = bfXs[idx].cos(mc);
-        }
-        // Measure MPFR
-        for (int i = 0; i < execCount; i++) {
-            idx = i % inCount;
+        for (int i = 0; i < this.totalCount; i++) {
             start = System.nanoTime();
-            bfVal = bfXs[idx].cos(mc);
+            results[i] = bfXs[i].cos(mc).doubleValue();
             end = System.nanoTime();
             times[i] = end - start;
         }
+        return results;
     }
 
     @Override
-    public void tan() {
-        int idx;
+    public double[] tan() {
         long start, end;
-        BigFloat bfVal;
-
-        // Warmup for MPFR
-        for (int i = 0; i < warmupCount; i++) {
-            idx = i % inCount;
-            bfVal = bfXs[idx].tan(mc);
-        }
-        // Measure MPFR
-        for (int i = 0; i < execCount; i++) {
-            idx = i % inCount;
+        for (int i = 0; i < this.totalCount; i++) {
             start = System.nanoTime();
-            bfVal = bfXs[idx].tan(mc);
+            results[i] = bfXs[i].tan(mc).doubleValue();
             end = System.nanoTime();
             times[i] = end - start;
         }
+        return results;
     }
 }

@@ -6,14 +6,13 @@ public class FPBenchmark {
     String libName;
     String[] funcNames;
     String dirpath;
-    int seed, inCount, warmupCount, execCount;
+    int seed, warmupCount, execCount;
 
-    public FPBenchmark(String libName, String[] funcNames, String dirpath, int seed, int ic, int wc, int ec) {
+    public FPBenchmark(String libName, String[] funcNames, String dirpath, int seed, int wc, int ec) {
         this.libName = libName;
         this.funcNames = funcNames;
         this.dirpath = dirpath;
         this.seed = seed;
-        inCount = ic;
         warmupCount = wc;
         execCount = ec;
     }
@@ -22,19 +21,19 @@ public class FPBenchmark {
         MathLib mlib = null;
         switch (libName) {
             case "math":
-                mlib = new LibJavaMath(inCount, warmupCount, execCount, libName);
+                mlib = new LibJavaMath(warmupCount, execCount, libName);
                 break;
             case "smath":
-                mlib = new LibJavaSMath(inCount, warmupCount, execCount, libName);
+                mlib = new LibJavaSMath(warmupCount, execCount, libName);
                 break;
             case "mpfr":
-                mlib = new LibMPFR(inCount, warmupCount, execCount, libName);
+                mlib = new LibMPFR(warmupCount, execCount, libName);
                 break;
             case "mf":
-                mlib = new LibMicro(inCount, warmupCount, execCount, libName);
+                mlib = new LibMicro(warmupCount, execCount, libName);
                 break;
             case "apf":
-                mlib = new LibApfloat(inCount, warmupCount, execCount, libName);
+                mlib = new LibApfloat(warmupCount, execCount, libName);
                 break;
         }
         if (mlib == null) {
@@ -42,9 +41,10 @@ public class FPBenchmark {
             System.exit(1);
         }
         mlib.initInputs(seed);
-        for (String fname: funcNames) {
-            mlib.execFunction(fname);
+        for (String fname : funcNames) {
+            double[] results = mlib.execFunction(fname);
             mlib.logStats(fname, dirpath);
+            System.out.println(results[0]);
         }
     }
 }
