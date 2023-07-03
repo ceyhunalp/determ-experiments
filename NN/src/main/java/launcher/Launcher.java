@@ -11,10 +11,11 @@ public class Launcher {
     public static void launchNNBenchmark(Dataset d) {
 //        int[] nodeCounts = {MNISTReader.IMG_SIZE, 64, MNISTReader.CLASS_SIZE};
         int[] nodeCounts = {CIFARReader.INPUT_SIZE, 128, CIFARReader.CLASS_SIZE};
-        NN nn = new NN(40, 0.01, 0.1, nodeCounts, 1, 67, true, false, 128,
-                "relu", d);
+        NN nn = new NN(5, 0.1, 0.1, nodeCounts, 1, 67, true, true, 32,
+                "sigmoid", d);
         nn.initializeNN();
-        nn.runNN();
+        nn.runNNTrain();
+        nn.runNNTest();
         int[] predictions = nn.getPredictions();
         int success = 0;
         for (int prediction : predictions) {

@@ -90,12 +90,15 @@ public class NN {
         }
     }
 
-    public void runNN() {
+    public void runNNTrain() {
         if (useMB) {
             runMiniBatch();
         } else {
             runSGD();
         }
+    }
+
+    public void runNNTest() {
         for (int i = 0; i < dataset.testImages.length; i++) {
             feedforward(dataset.testImages[i]);
             int predIdx = getPredictionIndex(outputs[hiddenLayers][0]);
@@ -118,11 +121,11 @@ public class NN {
                 updateWeights(gradients);
                 globalError += calculateLoss(i);
             }
-            System.out.println("Iteration: " + iter + " / Error: " + globalError + " (" + lrate + ")");
+//            System.out.println("Iteration: " + iter + " / Error: " + globalError + " (" + lrate + ")");
             iter++;
 //            updateLearningRate(iter);
         } while (iter < epochs && globalError > errorThresh);
-        System.out.println("Training finished @ " + iter);
+//        System.out.println("Training finished @ " + iter);
     }
 
     public void runMiniBatch() {
@@ -161,11 +164,11 @@ public class NN {
                 bIndex++;
                 i += bSize;
             }
-            System.out.println("Iteration: " + iter + " / Error: " + globalError + " (" + lrate + ")");
+//            System.out.println("Iteration: " + iter + " / Error: " + globalError + " (" + lrate + ")");
             iter++;
 //            updateLearningRate(iter);
         } while (iter < epochs && globalError > errorThresh);
-        System.out.println("Training finished @ " + iter);
+//        System.out.println("Training finished @ " + iter);
     }
 
     public void feedforward(double[][] input) {

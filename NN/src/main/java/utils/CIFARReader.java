@@ -8,13 +8,15 @@ import java.util.Scanner;
 
 public class CIFARReader {
 
-    public static final int INPUT_SIZE = 2048;
+    //    public static final int INPUT_SIZE = 2048;
+    public static final int INPUT_SIZE = 512;
     public static final int CLASS_SIZE = 10;
     static final int TRAIN_DS_SIZE = 50000;
     static final int TEST_DS_SIZE = 10000;
 
-    private static final String[] filenames = {"xaa", "xab", "xac", "xad",
-            "xae", "xaf", "xag", "xah", "xai", "xaj"};
+    //    private static final String[] filenames = {"xaa", "xab", "xac", "xad",
+//            "xae", "xaf", "xag", "xah", "xai", "xaj"};
+    private static final String[] filenames = {"xaa", "xab", "xac", "xad"};
 
     public static Dataset readDataset(String trainBase, String testBase, String trainLabel, String testLabel) throws IOException {
         double[][][] trainData = new double[TRAIN_DS_SIZE][1][INPUT_SIZE];
