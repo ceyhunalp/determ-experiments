@@ -72,23 +72,23 @@ public class NNBenchmark {
     }
 
     public static void writeTimes(String outdir, boolean isCnn, String func,
-                                  int epochs, double[] trainTimes, double[] testTimes) throws IOException {
-        String ds = isCnn ? "cifar" : "mnist";
-        String trainFile = ds + "_train.csv";
-        String testFile = ds + "_test.csv";
+                                  int mbSize, double[] trainTimes, double[] testTimes) throws IOException {
+        String ds = isCnn ? "cifar_" : "mnist_";
+        String trainFile = ds + func + "_" + mbSize + "_train.csv";
+        String testFile = ds + func + "_" + mbSize + "_test.csv";
 
         Path outPath = Paths.get(outdir, trainFile);
         String outfile = outPath.toString();
         FileWriter fw = new FileWriter(outfile, true);
         for (double time : trainTimes) {
-            fw.write(String.format("%s,%d,%.6f\n", func, epochs, time));
+            fw.write(String.format("%.6f\n", time));
         }
         fw.close();
         outPath = Paths.get(outdir, testFile);
         outfile = outPath.toString();
         fw = new FileWriter(outfile, true);
         for (double time : testTimes) {
-            fw.write(String.format("%s,%d,%.6f\n", func, epochs, time));
+            fw.write(String.format("%.6f\n", time));
         }
         fw.close();
     }
@@ -141,7 +141,7 @@ public class NNBenchmark {
         removeWarmupTimes(allTrainTimes, trainTimes, wc);
         removeWarmupTimes(allTestTimes, testTimes, wc);
 
-        writeTimes(outdir, isCnn, func, epochs, trainTimes, testTimes);
+        writeTimes(outdir, isCnn, func, mbSize, trainTimes, testTimes);
     }
 
     public static void main(String[] args) throws IOException {
