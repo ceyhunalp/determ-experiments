@@ -1,5 +1,6 @@
 package benchmark;
 
+import com.google.common.math.Stats;
 import nn.NN;
 import utils.CIFARReader;
 import utils.Dataset;
@@ -12,6 +13,7 @@ import java.nio.file.Paths;
 
 public class NNBenchmark {
 
+    final static String HEADER = "avg,stddev,min,max";
     final static double LRATE = 0.1;
     final static double NANOSECS = 1E9;
 
@@ -79,17 +81,25 @@ public class NNBenchmark {
 
         Path outPath = Paths.get(outdir, trainFile);
         String outfile = outPath.toString();
+        Stats stats = Stats.of(trainTimes);
         FileWriter fw = new FileWriter(outfile, true);
-        for (double time : trainTimes) {
-            fw.write(String.format("%.6f\n", time));
-        }
+        fw.write(String.format("%s\n", HEADER));
+        fw.write(String.format("%.6f,%.6f,%.6f,%.6f\n",
+                stats.mean(),
+                stats.sampleStandardDeviation(),
+                stats.min(),
+                stats.max()));
         fw.close();
         outPath = Paths.get(outdir, testFile);
         outfile = outPath.toString();
+        stats = Stats.of(testTimes);
         fw = new FileWriter(outfile, true);
-        for (double time : testTimes) {
-            fw.write(String.format("%.6f\n", time));
-        }
+        fw.write(String.format("%s\n", HEADER));
+        fw.write(String.format("%.6f,%.6f,%.6f,%.6f\n",
+                stats.mean(),
+                stats.sampleStandardDeviation(),
+                stats.min(),
+                stats.max()));
         fw.close();
     }
 
