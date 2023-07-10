@@ -123,7 +123,6 @@ public class NN {
             }
 //            System.out.println("Iteration: " + iter + " / Error: " + globalError + " (" + lrate + ")");
             iter++;
-//            updateLearningRate(iter);
         } while (iter < epochs && globalError > errorThresh);
 //        System.out.println("Training finished @ " + iter);
     }
@@ -238,6 +237,7 @@ public class NN {
         double[] output = outputs[hiddenLayers][0];
         double[] target = dataset.targets[targetIdx][0];
         assert (output.length == target.length);
+        double diff;
         double loss = 0.0;
         if (useSoftmax) {
             for (int i = 0; i < output.length; i++) {
@@ -246,7 +246,9 @@ public class NN {
             return (loss * -1.0) / (double) output.length;
         } else {
             for (int i = 0; i < output.length; i++) {
-                loss += Math.pow(target[i] - output[i], 2);
+//                loss += Math.pow(target[i] - output[i], 2);
+                diff = target[i] - output[i];
+                loss += (diff * diff);
             }
             loss = loss / (double) output.length;
             return loss;

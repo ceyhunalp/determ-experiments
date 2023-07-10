@@ -15,9 +15,12 @@ public class TanhActivation implements ActivationFunction {
         int r = m.length;
         int c = m[0].length;
         double[][] result = new double[r][c];
+        double tmp;
         for (int i = 0; i < r; i++) {
             for (int j = 0; j < c; j++) {
-                result[i][j] = 1.0 - Math.pow(Math.tanh(m[i][j]), 2);
+//                result[i][j] = 1.0 - Math.pow(Math.tanh(m[i][j]), 2);
+                tmp = Math.tanh(m[i][j]);
+                result[i][j] = 1.0 - (tmp * tmp);
             }
         }
         return result;
