@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="mpfr_java-1.4-osx64">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/kframework/mpfr_java/mpfr_java/1.4/mpfr_java-1.4-osx64.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

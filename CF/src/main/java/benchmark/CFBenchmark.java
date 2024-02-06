@@ -15,17 +15,16 @@ public class CFBenchmark {
 
     public static double[] runCFBenchmark(CF cf, int wc, int ec) {
         long start, end;
-        int size = cf.dataset.userIDs.size();
         double[] times = new double[ec + wc];
-        for (int i = 0; i < 1000; i++) {
-            cf.calculateSimilarityScores(100);
-            cf.makePredictions();
-            cf.similarityScores.clear();
-            cf.predictions.clear();
-        }
+//        for (int i = 0; i < 1000; i++) {
+//            cf.calculateSimilarityScores();
+//            cf.makePredictions();
+//            cf.similarityScores.clear();
+//            cf.predictions.clear();
+//        }
         for (int i = 0; i < wc + ec; i++) {
             start = System.nanoTime();
-            cf.calculateSimilarityScores(size);
+            cf.calculateSimilarityScores();
             cf.makePredictions();
             end = System.nanoTime();
             times[i] = (end - start) / NANOSECS;
@@ -36,7 +35,7 @@ public class CFBenchmark {
     }
 
     public static void removeWarmupTimes(double[] times, double[] execTimes, int wc) {
-        System.arraycopy(times, wc + 0, execTimes, 0, execTimes.length);
+        System.arraycopy(times, wc, execTimes, 0, execTimes.length);
     }
 
     public static void writeTimes(String outdir, String lib, double[] times, int foldNum) throws IOException {
@@ -71,7 +70,7 @@ public class CFBenchmark {
         allTimes = runCFBenchmark(cf, wc, ec);
         removeWarmupTimes(allTimes, execTimes, wc);
         writeTimes(outdir, lib, execTimes, foldNum);
-
+        System.out.println(CF.counter);
 //        for (double t : allTimes) {
 //            System.out.printf("%.6f\n", t);
 //        }

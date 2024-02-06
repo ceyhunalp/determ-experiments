@@ -71,9 +71,7 @@ public class MMBenchmark {
     }
 
     public static void removeWarmupTimes(double[] times, double[] execTimes, int wc) {
-        for (int i = 0; i < execTimes.length; i++) {
-            execTimes[i] = times[wc + i];
-        }
+        System.arraycopy(times, wc, execTimes, 0, execTimes.length);
     }
 
     public static void launchBenchmark(String[] args) throws IOException {

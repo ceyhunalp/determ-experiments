@@ -53,11 +53,13 @@ public abstract class MathLib {
         this.outfile = dirpath + this.libName + ".csv";
         Stats stats = Stats.of(execTimes);
         FileWriter fw = new FileWriter(this.outfile, true);
-        fw.write("fname,avg,stddev\n");
-        fw.write(String.format("%s,%.5f,%.5f\n",
+        fw.write("fname,avg,stddev,min,max\n");
+        fw.write(String.format("%s,%.5f,%.5f,%f,%f\n",
                 fname,
                 stats.mean(),
-                stats.sampleStandardDeviation()));
+                stats.sampleStandardDeviation(),
+                stats.min(),
+                stats.max()));
         fw.close();
     }
 }

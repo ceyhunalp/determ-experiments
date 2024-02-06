@@ -8,6 +8,7 @@ import java.util.*;
 
 public class CF {
 
+    public static int counter = 0;
     final static double THRESHOLD = 0.0;
 
     public final Dataset dataset;
@@ -68,16 +69,16 @@ public class CF {
             double firstPair = u1Ratings.get(item) - firstAvg;
             double secondPair = u2Ratings.get(item) - secondAvg;
             numer += firstPair * secondPair;
-            u1Denom += Math.pow(firstPair, 2);
-            u2Denom += Math.pow(secondPair, 2);
+            u1Denom += StrictMath.pow(firstPair, 2);
+            u2Denom += StrictMath.pow(secondPair, 2);
+            counter += 2;
         }
-        double denom = Math.sqrt(u1Denom * u2Denom);
+        double denom = StrictMath.sqrt(u1Denom * u2Denom);
         return numer / denom;
     }
 
-    //    public void calculateSimilarityScores() {
-    public void calculateSimilarityScores(int size) {
-//        int size = dataset.userIDs.size();
+    public void calculateSimilarityScores() {
+        int size = dataset.userIDs.size();
         for (int i = 0; i < size; i++) {
             for (int j = i + 1; j < size; j++) {
                 int firstUID = dataset.userIDs.get(i);
@@ -125,10 +126,10 @@ public class CF {
         assert (dataset.actualRatings.size() == predictions.size());
         double sum = 0.0;
         for (int i = 0; i < predictions.size(); i++) {
-            sum += Math.pow((double) dataset.actualRatings.get(i) - predictions.get(i), 2);
+            sum += StrictMath.pow((double) dataset.actualRatings.get(i) - predictions.get(i), 2);
         }
         sum /= predictions.size();
-        sum = Math.sqrt(sum);
+        sum = StrictMath.sqrt(sum);
         this.error = sum;
     }
 
@@ -136,7 +137,7 @@ public class CF {
         assert (dataset.actualRatings.size() == predictions.size());
         double sum = 0.0;
         for (int i = 0; i < predictions.size(); i++) {
-            sum += Math.abs((double) dataset.actualRatings.get(i) - predictions.get(i));
+            sum += StrictMath.abs((double) dataset.actualRatings.get(i) - predictions.get(i));
         }
         sum /= predictions.size();
         this.error = sum;

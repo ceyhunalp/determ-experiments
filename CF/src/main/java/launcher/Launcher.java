@@ -13,7 +13,7 @@ public class Launcher {
             Dataset d = Reader.readCVDataset(dir, i);
             CF cf = new CF(d);
             cf.calculateAverageRatings();
-            cf.calculateSimilarityScores(d.userIDs.size());
+            cf.calculateSimilarityScores();
             cf.makePredictions();
             cf.calculateRMSE();
             System.out.println("(RMSE) Fold #" + (i) + " : " + cf.error);
